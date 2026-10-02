@@ -1,0 +1,30 @@
+[
+  {
+    "designation": "СП 50.13330.2012",
+    "title": "СНиП 23-02-2003 «Тепловая защита зданий»",
+    "status": "действует по официальному реестру",
+    "official_source": "https://faufcc.ru/deiatelnost/normirovanie-i-standartizatsiia/reestr-svodov-pravil",
+    "reason": "В записи официального реестра ФАУ «ФЦС» не был доступен открытый PDF полного текста. Вместо неофициального зеркала в корпус включён СП 345.1325800.2017."
+  },
+  {
+    "designation": "СП 51.13330.2011",
+    "title": "СНиП 23-03-2003 «Защита от шума»",
+    "status": "действует по официальному реестру",
+    "official_source": "https://faufcc.ru/deiatelnost/normirovanie-i-standartizatsiia/reestr-svodov-pravil",
+    "reason": "В записи официального реестра ФАУ «ФЦС» не был доступен открытый PDF полного текста. Вместо неофициального зеркала в корпус включён СП 275.1325800.2016."
+  },
+  {
+    "designation": "СП 1.13130.2020 с действующими изменениями",
+    "title": "Системы противопожарной защиты. Эвакуационные пути и выходы",
+    "status": "действует с изменениями",
+    "official_source": "https://mchs.gov.ru/dokumenty/inye-normativnye-pravovye-akty/prochie-normativnye-pravovye-akty/svody-pravil/svody-pravil-mchs-rossii",
+    "reason": "В корпус включён официальный базовый текст. Для рабочего проектирования желательно получить официальный консолидированный текст с изменениями, действующими с 01.07.2025."
+  },
+  {
+    "designation": "СП 4.13130.2013 с изменениями № 1–4",
+    "title": "Системы противопожарной защиты. Ограничение распространения пожара на объектах защиты",
+    "status": "действует с изменениями",
+    "official_source": "https://mchs.gov.ru/dokumenty/inye-normativnye-pravovye-akty/prochie-normativnye-pravovye-akty/svody-pravil/svody-pravil-mchs-rossii",
+    "reason": "Официальный PDF в корпусе содержит редакцию с изменением № 1; открытый консолидированный файл с изменениями № 2–4 не найден."
+  }
+]
