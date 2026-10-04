@@ -1,0 +1,2 @@
+﻿asr_sec,diarization_sec,detection_sec,retrieval_sec,answer_llm_sec,total_sec,audio_duration_sec,duration_source,asr_real_time_factor,full_real_time_factor,scope,reason
+29.446810599882156,16.463958600070328,33.476336899911985,12.408793200040236,23.117566999979317,115.81566180009395,247.616,WAV header,0.11892127568445558,0.46772285232010025,single saved run,

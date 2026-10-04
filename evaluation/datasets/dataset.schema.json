@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Offline meeting reference annotations, version 1",
+  "type": "object",
+  "required": ["schema_version", "id", "audio_file"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "id": {"type": "string"},
+    "audio_file": {"type": "string"},
+    "hypothesis": {"type": "object", "properties": {"analysis_file": {"type": "string"}, "progress_file": {"type": "string"}}},
+    "reference_transcript": {"oneOf": [{"type": "null"}, {"type": "string"}, {"type": "array", "items": {"allOf": [{"$ref": "#/$defs/turn"}, {"required": ["text"], "properties": {"text": {"type": "string"}}}]}}]},
+    "reference_diarization": {"type": ["null", "array"], "items": {"$ref": "#/$defs/turn"}},
+    "evaluation_regions": {"type": ["null", "array"], "items": {"type": "object", "required": ["start", "end"], "properties": {"start": {"type": "number", "minimum": 0}, "end": {"type": "number", "minimum": 0}}}},
+    "reference_issues": {"type": ["null", "array"], "items": {"type": "object", "required": ["id"], "properties": {
+      "id": {"type": "string"}, "question": {"type": "string"}, "start": {"type": "number"}, "end": {"type": "number"},
+      "segment_ids": {"type": "array", "items": {"type": "string"}}, "search_terms": {"type": "array", "items": {"type": "string"}},
+      "expected_sources": {"type": ["null", "array"], "items": {"type": "object", "properties": {"document": {"type": "string"}, "designation": {"type": "string"}, "page": {"type": "integer", "minimum": 1}, "chunk_id": {"type": "string"}}}},
+      "expected_status": {"type": ["null", "string"]}, "expected_answer_facts": {"type": ["null", "array"], "items": {"type": "string"}}
+    }}},
+    "matching": {"type": "object", "properties": {"mode": {"enum": ["time", "segments"]}, "threshold": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}}},
+    "der": {"type": "object", "properties": {"collar_sec": {"type": "number", "minimum": 0}, "skip_overlap": {"type": "boolean"}}}
+  },
+  "$defs": {"turn": {"type": "object", "required": ["start", "end", "speaker"], "properties": {"start": {"type": "number", "minimum": 0}, "end": {"type": "number", "minimum": 0}, "speaker": {"type": "string", "minLength": 1}}}}
+}

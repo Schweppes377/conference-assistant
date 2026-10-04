@@ -342,3 +342,33 @@ python -m unittest discover -s llm -p "test_*.py" -v
 ~~~
 
 Тесты проверяют chunking, отсутствие дублей в ChromaDB, формирование grounded prompt, привязку SOURCE-ID к metadata, недостаточный контекст, недоступную модель, rate limit и отсутствие API-ключа. Аудиоконвейер этими командами не запускается.
+
+## Offline-демонстрация и измерения для ВКР
+
+Основной CLI показывает шесть стадий и краткую сводку. Новый полный запуск
+сохраняет точную длительность аудио и исходные diarization turns в analysis/progress;
+старые результаты не изменяются. Рабочий baseline, prompts, retrieval и модели сохранены.
+
+~~~powershell
+.\run-direct.ps1 -m pytest -q
+.\run-direct.ps1 -m evaluation.run
+~~~
+
+Эти команды не вызывают GigaChat и не загружают модели. Pytest устанавливается
+отдельно для разработки: `.\run-direct.ps1 -m pip install -r requirements-dev.txt`.
+Evaluation по умолчанию читает сохранённый baseline, а не запускает анализ аудио.
+Нет эталона — WER/DER/F1/Hit@K остаются null/SKIPPED, не фиктивными нулями.
+
+- Руководство: [docs/USER_GUIDE.md](docs/USER_GUIDE.md).
+- Соответствие разделам главы 3: [docs/TECHNICAL_IMPLEMENTATION_NOTES.md](docs/TECHNICAL_IMPLEMENTATION_NOTES.md).
+- Формат разметки и метрики: [evaluation/README.md](evaluation/README.md).
+- Шаблон: `evaluation/datasets/construction_meeting.template.json`.
+- Выгрузки: `evaluation/results/baseline/summary.json` и CSV; pytest outcomes — `evaluation/results/reliability.json`.
+
+Полный manual/e2e запускает пользователь отдельно:
+
+~~~powershell
+.\run-direct.ps1 -m app.analyze_meeting data\audio\construction_meeting.wav --debug
+~~~
+
+Он расходует LLM-токены и не входит в автоматические tests/evaluation.

@@ -50,6 +50,7 @@ class MeetingAnalysisPipeline:
         audio_loader: Callable[..., Any] | None = None,
         checkpoint_path: Path | None = None, state: dict[str, Any] | None = None,
         max_llm_calls: int | None = None,
+        on_stage: Callable[[int, str], None] | None = None,
     ) -> None:
         if max_llm_calls is not None and max_llm_calls < 1:
             raise ValueError("MAX_LLM_CALLS_PER_RUN must be positive")
@@ -62,6 +63,7 @@ class MeetingAnalysisPipeline:
         check_llm_identity(self.state, provider=qa_service.llm_client.provider,
                            model=qa_service.llm_client.model)
         self.explicit_budget = max_llm_calls
+        self.on_stage = on_stage or (lambda number, description: None)
         self.runtime = RunLLMClient(
             qa_service.llm_client, state=self.state.setdefault("llm_runtime", {}),
             max_calls=max_llm_calls or 1, on_change=self._save,
@@ -89,12 +91,17 @@ class MeetingAnalysisPipeline:
         started = perf_counter()
         audio = (self.audio_loader or load_audio)(path, sample_rate=SAMPLE_RATE)
         timings["audio_decode_seconds"] = perf_counter() - started
+        self.state["audio_duration_sec"] = len(audio) / SAMPLE_RATE
+        self.on_stage(1, "Распознавание речи")
         started = perf_counter()
         asr = self.transcription_pipeline.transcriber.transcribe(audio)
         timings["asr_seconds"] = perf_counter() - started
+        self.on_stage(2, "Определение говорящих")
         started = perf_counter()
         diarization = self.transcription_pipeline.diarizer.diarize(audio, SAMPLE_RATE)
         timings["diarization_seconds"] = perf_counter() - started
+        self.state["diarization_segments"] = [asdict(s) for s in diarization]
+        self.on_stage(3, "Формирование стенограммы")
         self.state["audio_timings"] = timings
         return self.analyze_transcript(merge_transcript(asr, diarization), audio_file=str(path))
 
@@ -131,6 +138,7 @@ class MeetingAnalysisPipeline:
         self._save()
 
         try:
+            self.on_stage(4, "Выделение нормативных вопросов" + (" (сохранено)" if self.state["detection_complete"] else ""))
             if not self.state["detection_complete"]:
                 detection = self.issue_detector.detect(
                     transcript, progress=self.state["detection_progress"], on_progress=self._save,
@@ -140,6 +148,7 @@ class MeetingAnalysisPipeline:
                 self.state["detection_seconds"] = detection.metrics.llm_seconds
                 self._save()
             issues = [DetectedIssue(**raw) for raw in self.state["detected_issues"]]
+            self.on_stage(5, "Поиск нормативных документов и анализ")
             self.runtime.max_calls = self.explicit_budget or max(2, 2 * (window_count + len(issues)))
             for issue in issues:
                 if issue.id in self.state["answers"]:
@@ -253,6 +262,8 @@ class MeetingAnalysisPipeline:
             run_status=self.state["run_status"], stop_reason=self.state["stop_reason"],
             checkpoint_file=str(self.checkpoint_path) if self.checkpoint_path else None,
             llm_provider=self.runtime.provider, llm_model=self.runtime.model,
+            audio_duration_sec=self.state.get("audio_duration_sec"),
+            diarization_segments=self.state.get("diarization_segments"),
         )
 
 

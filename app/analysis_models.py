@@ -139,6 +139,8 @@ class MeetingAnalysis:
     checkpoint_file: str | None = None
     llm_provider: str = "unknown"
     llm_model: str = "unknown"
+    audio_duration_sec: float | None = None
+    diarization_segments: list[dict[str, Any]] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable result."""

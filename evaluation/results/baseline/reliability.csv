@@ -1,0 +1,2 @@
+﻿tests,passed,failed,skipped,collection_errors,success_rate,exit_status,measured_at,definition,network_allowed
+111,111,0,0,0,1.0,0,2026-10-04T21:05:14.717529+00:00,passed / (passed + failed + collection_errors); excludes skipped; not SLA,False

@@ -32,7 +32,22 @@ def read_input(path: Path, *, mode: str) -> dict[str, Any]:
         if not isinstance(data, dict) or data.get("checkpoint_version") != 1:
             raise ValueError("Для --resume нужен *_progress.json версии 1.")
         _validate_transcript(data.get("transcript"))
+        for name in ("answers", "prepared", "detection_progress", "llm_runtime", "settings"):
+            if name in data and not isinstance(data[name], dict):
+                raise ValueError(f"Повреждённый progress: {name} должен быть объектом.")
+        if "detected_issues" in data and not isinstance(data["detected_issues"], list):
+            raise ValueError("Повреждённый progress: detected_issues должен быть списком.")
+        for name in ("answers", "prepared", "detection_progress"):
+            if any(not isinstance(v, dict) for v in data.get(name, {}).values()):
+                raise ValueError(f"Повреждённый progress: элементы {name} должны быть объектами.")
+        if any(not isinstance(v, dict) for v in data.get("detected_issues", [])):
+            raise ValueError("Повреждённый progress: некорректные detected_issues.")
+        runtime = data.get("llm_runtime", {})
+        if not isinstance(runtime.get("events", []), list) or not isinstance(runtime.get("responses", {}), dict):
+            raise ValueError("Повреждённый progress: некорректный llm_runtime.")
         return data
+    if not isinstance(data, (dict, list)):
+        raise ValueError("Входной JSON должен быть объектом или списком сегментов.")
     raw_transcript = data if isinstance(data, list) else data.get("transcript")
     transcript = _validate_transcript(raw_transcript)
     state: dict[str, Any] = {
@@ -44,9 +59,13 @@ def read_input(path: Path, *, mode: str) -> dict[str, Any]:
     if mode == "issues":
         if not isinstance(data, dict) or not isinstance(data.get("detected_issues"), list):
             raise ValueError("Для --issues нужен analysis.json с detected_issues и transcript.")
+        if not isinstance(data.get("prepared", {}), dict):
+            raise ValueError("Некорректный analysis: prepared должен быть объектом.")
         names = {field.name for field in fields(DetectedIssue)}
         issues = []
         for index, raw in enumerate(data["detected_issues"], 1):
+            if not isinstance(raw, dict):
+                raise ValueError("Некорректный detected issue: нужен JSON-объект.")
             values = {name: raw[name] for name in names if name in raw}
             values.setdefault("search_terms", [])
             values.setdefault("id", f"ISSUE_{index:03d}")
@@ -54,7 +73,7 @@ def read_input(path: Path, *, mode: str) -> dict[str, Any]:
                 issue = DetectedIssue(**values)
             except TypeError as exc:
                 raise ValueError("Некорректный detected issue в analysis.json") from exc
-            if not issue.normalized_question.strip():
+            if not isinstance(issue.normalized_question, str) or not issue.normalized_question.strip():
                 raise ValueError("Вопрос не может быть пустым")
             issues.append(values)
             if raw.get("status") not in (None, STATUS_PENDING, STATUS_PROCESSING_ERROR):
@@ -113,4 +132,6 @@ def _validate_transcript(raw: Any) -> list[dict[str, Any]]:
                 or not isinstance(text, str) or not isinstance(speaker, str)):
             raise ValueError("Некорректные timestamps/text/speaker стенограммы")
         result.append({"start": start, "end": end, "speaker": speaker, "text": text})
+    if not any(segment["text"].strip() for segment in result):
+        raise ValueError("Стенограмма не содержит текста.")
     return result

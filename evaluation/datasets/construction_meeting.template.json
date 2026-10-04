@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "construction_meeting",
+  "audio_file": "data/audio/construction_meeting.wav",
+  "hypothesis": {
+    "analysis_file": "data/results/construction_meeting_20261004_233227_076424_analysis.json",
+    "progress_file": "data/results/construction_meeting_20261004_233031_181110_progress.json"
+  },
+  "reference_transcript": null,
+  "reference_diarization": null,
+  "evaluation_regions": null,
+  "reference_issues": null,
+  "matching": {"mode": "time", "threshold": 0.5},
+  "der": {"collar_sec": 0.25, "skip_overlap": false},
+  "annotation_notes": "Это шаблон, не ground truth. Заполнить независимо по аудио и нормативам. Пути hypothesis указывают реальные сохранённые результаты baseline."
+}

@@ -159,11 +159,17 @@ def main() -> int:
             transcription_pipeline=transcription_pipeline, issue_detector=detector,
             qa_service=qa_service, checkpoint_path=checkpoint, state=state,
             max_llm_calls=args.max_llm_calls,
+            on_stage=lambda n, text: print(f"[{n}/6] {text}", flush=True),
         )
+        print("=== Анализ совещания ===", flush=True)
+        if not args.audio:
+            for n, text in enumerate(("Распознавание речи", "Определение говорящих", "Формирование стенограммы"), 1):
+                print(f"[{n}/6] {text} (готовая стенограмма)", flush=True)
         analysis = pipeline.analyze(args.audio) if args.audio else pipeline.analyze_transcript(
             [TranscriptSegment(**s) for s in state["transcript"]],
             audio_file=state["audio_file"],
         )
+        print("[6/6] Формирование отчёта", flush=True)
         paths = save_meeting_analysis(analysis, args.results_dir)
     except LLMError as exc:
         print(f"Ошибка LLM: {exc}", file=sys.stderr)
@@ -210,9 +216,15 @@ def _print_summary(analysis: MeetingAnalysis) -> None:
     stats = analysis.statistics
     print("Анализ совещания завершён." if analysis.run_status == "completed" else "Обработка приостановлена; прогресс сохранён.")
     print(f"Реплик: {stats.transcript_segments}")
+    duration = f"{analysis.audio_duration_sec:.2f} с" if analysis.audio_duration_sec is not None else "не измерена в этом результате"
+    print(f"Длительность аудио: {duration}")
+    print(f"Число говорящих: {len(stats.speakers)}")
     print(f"Спикеры: {', '.join(stats.speakers)}")
     print(f"Нормативных вопросов: {stats.detected_issues}")
     print(f"Ожидают обработки: {stats.pending_issues}")
+    print(f"Обработано без processing_error: {stats.detected_issues - stats.processing_errors - stats.pending_issues}")
+    print(f"partial_information: {stats.partial_information}; processing_error: {stats.processing_errors}")
+    print(f"Общее время текущего результата: {stats.timings.total_seconds:.3f} с")
     for issue in analysis.detected_issues:
         print(f"- [{issue.id}] {issue.normalized_question} ({issue.status})")
 
