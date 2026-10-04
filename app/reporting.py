@@ -15,6 +15,7 @@ from app.analysis_models import (
     STATUS_PARTIAL_INFORMATION,
     STATUS_POTENTIAL_NONCOMPLIANCE,
     STATUS_PROCESSING_ERROR,
+    STATUS_PENDING,
     STATUS_REQUIREMENT_FOUND,
 )
 
@@ -25,6 +26,7 @@ _STATUS_LABELS = {
     STATUS_INSUFFICIENT_INFORMATION: "Недостаточно информации в нормативном корпусе",
     STATUS_POTENTIAL_NONCOMPLIANCE: "Обнаружено потенциальное несоответствие",
     STATUS_PROCESSING_ERROR: "Ошибка обработки вопроса",
+    STATUS_PENDING: "Ожидает продолжения обработки",
 }
 
 _CATEGORY_LABELS = {
@@ -86,10 +88,14 @@ def _build_report(analysis: MeetingAnalysis) -> str:
         f"- Недостаточно информации: {stats.insufficient_information}",
         f"- Потенциальных несоответствий: {stats.potential_noncompliance}",
         f"- Ошибок обработки вопросов: {stats.processing_errors}",
+        f"- Ожидают обработки: {stats.pending_issues}",
         "",
     ]
+    if analysis.stop_reason:
+        lines.extend([analysis.stop_reason, "", f"Файл продолжения: `{analysis.checkpoint_file}`", ""])
     if not analysis.detected_issues:
-        lines.extend(["Нормативно значимые фрагменты не обнаружены.", ""])
+        lines.extend([("Detection ещё не завершён; стенограмма и выполненные окна сохранены."
+                       if analysis.run_status != "completed" else "Нормативно значимые фрагменты не обнаружены."), ""])
         return "\n".join(lines)
 
     for issue in analysis.detected_issues:

@@ -8,9 +8,13 @@ from decimal import Decimal
 from time import perf_counter
 from typing import Protocol
 
-from llm.base import LLMClient
+from llm.base import EmptyResponseError, LLMClient
 from llm.config import QAConfig
-from llm.models import CitationValidationError, QAResult, QATimings, SourceEvidence
+from llm.models import (
+    CitationValidationError, ContextValidationError, PreparedQuestion,
+    QAResult, QATimings, SourceEvidence,
+)
+from llm.runtime import generate
 from llm.prompts import (
     INSUFFICIENT_CONTEXT_ANSWER,
     PARTIAL_CONTEXT_MARKER,
@@ -55,6 +59,8 @@ class QuestionAnsweringService:
         question: str,
         *,
         search_terms: Sequence[str] = (),
+        prepared: PreparedQuestion | None = None,
+        operation_id: str = "standalone",
     ) -> QAResult:
         """Answer one question using only verified retrieved chunks."""
 
@@ -69,18 +75,12 @@ class QuestionAnsweringService:
         validation_input = " ".join([clean_question, *trusted_search_terms])
 
         total_started = perf_counter()
-        retrieval_started = perf_counter()
-        evidence = self._retrieve_candidates(clean_question, trusted_search_terms)
-        retrieval_seconds = perf_counter() - retrieval_started
-        relevant = [
-            source
-            for source in evidence
-            if source.score >= self.config.min_relevance_score
-        ]
-        context_sources = self._fit_context(
-            relevant[: self.config.top_k],
-            clean_question,
-        )
+        prepared = prepared or self.prepare(clean_question, search_terms=trusted_search_terms)
+        if prepared.question != clean_question or prepared.validation_input != validation_input:
+            raise ValueError("Saved retrieval does not match this question/search_terms")
+        evidence = prepared.retrieved_candidates
+        retrieval_seconds = prepared.retrieval_seconds
+        context_sources = prepared.context_sources
 
         if not context_sources:
             total_seconds = perf_counter() - total_started
@@ -110,23 +110,31 @@ class QuestionAnsweringService:
         current_prompt = user_prompt
         for attempt in range(2):
             llm_started = perf_counter()
-            completion = self.llm_client.complete(
-                system_prompt=SYSTEM_PROMPT,
-                user_prompt=current_prompt,
-                temperature=self.config.temperature,
-                max_tokens=self.config.max_output_tokens,
-            )
-            llm_seconds += perf_counter() - llm_started
-            completions.append(completion)
             try:
+                completion = generate(
+                    self.llm_client, stage="answer", operation=operation_id,
+                    attempt=attempt, system_prompt=SYSTEM_PROMPT,
+                    user_prompt=current_prompt, temperature=self.config.temperature,
+                    max_tokens=self.config.max_output_tokens,
+                )
+                llm_seconds += perf_counter() - llm_started
+                completions.append(completion)
+                if not completion.content.strip():
+                    raise EmptyResponseError("LLM returned an empty answer")
                 cited_sources, insufficient, partial = _validate_completion(
                     completion.content,
                     validation_input,
                     context_sources,
                 )
                 break
-            except CitationValidationError as exc:
+            except ContextValidationError:
+                # A second generation cannot supply a missing normative value.
+                # Reject the ungrounded answer and preserve its token usage.
+                raise
+            except (CitationValidationError, EmptyResponseError) as exc:
                 if attempt == 1:
+                    if isinstance(exc, EmptyResponseError):
+                        raise CitationValidationError("LLM twice returned an empty answer") from exc
                     raise
                 current_prompt = (
                     user_prompt
@@ -163,6 +171,23 @@ class QuestionAnsweringService:
             prompt_tokens=_sum_tokens(completions, "prompt_tokens"),
             completion_tokens=_sum_tokens(completions, "completion_tokens"),
             total_tokens=_sum_tokens(completions, "total_tokens"),
+        )
+
+    def prepare(
+        self, question: str, *, search_terms: Sequence[str] = (),
+    ) -> PreparedQuestion:
+        """Run unchanged retrieval once; persist before making an API call."""
+        clean_question = question.strip()
+        if not clean_question:
+            raise ValueError("Question cannot be empty")
+        terms = [term.strip() for term in search_terms if isinstance(term, str) and term.strip()]
+        started = perf_counter()
+        evidence = self._retrieve_candidates(clean_question, terms)
+        relevant = [source for source in evidence if source.score >= self.config.min_relevance_score]
+        context_sources = self._fit_context(relevant[:self.config.top_k], clean_question)
+        return PreparedQuestion(
+            clean_question, " ".join([clean_question, *terms]), evidence,
+            context_sources, perf_counter() - started,
         )
 
     def _retrieve_candidates(
@@ -284,6 +309,7 @@ def _validate_measured_values(
     invented = sorted(claimed - allowed)
     if invented:
         guidance = []
+        missing_context = False
         for measurement in invented:
             matching_ids = [
                 source.source_id
@@ -296,8 +322,10 @@ def _validate_measured_values(
                     formatted + " подтверждается " + ", ".join(matching_ids)
                 )
             else:
+                missing_context = True
                 guidance.append(formatted + " отсутствует во всем контексте")
-        raise CitationValidationError(
+        error_class = ContextValidationError if missing_context else CitationValidationError
+        raise error_class(
             "LLM answer contains measured values absent from the question and "
             "cited chunks. Исправь ссылки или удали значения: "
             + "; ".join(guidance)

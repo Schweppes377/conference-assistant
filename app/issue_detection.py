@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from collections.abc import Callable, Sequence
+from dataclasses import asdict, dataclass, replace
 from time import perf_counter
 from typing import Any
 
@@ -16,6 +16,7 @@ from app.analysis_models import (
 )
 from app.transcript import TranscriptSegment
 from llm.base import LLMClient, LLMCompletion
+from llm.runtime import generate
 
 
 DETECTION_SYSTEM_PROMPT = """Ты анализируешь стенограмму строительного совещания.
@@ -60,22 +61,6 @@ DETECTION_SYSTEM_PROMPT = """Ты анализируешь стенограмм�
 "category":"evacuation","reason":"Почему фрагмент требует проверки"}]}
 
 Если нормативно значимых фрагментов нет, верни {"issues":[]}."""
-
-_RUSSIAN_RETRY_INSTRUCTION = """КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ФОРМАТА:
-Верни результат на русском языке. Все normalized_question, reason и любые другие
-пользовательские текстовые поля, включая search_terms, должны быть исключительно
-на русском языке.
-Не переводи русскую стенограмму на английский. Верни полный исправленный JSON."""
-
-_TRACEABILITY_RETRY_INSTRUCTION = """КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ТРАССИРУЕМОСТИ:
-Верни полный исправленный JSON. Для каждого вопроса укажи только те segment_ids,
-в которых действительно обсуждаются этот объект и параметр. Все числовые
-значения из normalized_question должны присутствовать в выбранных репликах.
-Не присоединяй соседние реплики о другом объекте только из-за общей категории."""
-
-_JSON_RETRY_INSTRUCTION = """КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ФОРМАТА:
-Предыдущий ответ не является корректным полным JSON. Верни заново только один
-валидный JSON-объект формата {"issues":[...]}, без Markdown и пояснений."""
 
 _CATEGORY = re.compile(r"^[a-z][a-z0-9_]{0,49}$")
 _WORD = re.compile(r"[\wа-яё]+", re.IGNORECASE)
@@ -174,7 +159,11 @@ class NormativeIssueDetector:
         self.llm_client = llm_client
         self.config = config or IssueDetectionConfig()
 
-    def detect(self, transcript: Sequence[TranscriptSegment]) -> DetectionResult:
+    def detect(
+        self, transcript: Sequence[TranscriptSegment], *,
+        progress: dict[str, Any] | None = None,
+        on_progress: Callable[[], None] | None = None,
+    ) -> DetectionResult:
         """Return validated issues whose traceability comes from the transcript."""
 
         if not transcript:
@@ -192,66 +181,66 @@ class NormativeIssueDetector:
         )
 
         windows = list(_windows(transcript, self.config))
+        saved_windows = progress if progress is not None else {}
         for start_index, window in windows:
+            saved = saved_windows.get(str(start_index))
+            if saved is not None:
+                detected.extend(DetectedIssue(**issue) for issue in saved["issues"])
+                llm_seconds += saved.get("llm_seconds", 0.0)
+                continue
             allowed_ids = {
                 _segment_id(index)
                 for index in range(start_index + 1, start_index + len(window) + 1)
             }
             prompt = _build_window_prompt(window, start_index)
-            completion, elapsed = self._complete(prompt)
-            llm_seconds += elapsed
-            completions.append(completion)
-            try:
-                payload = _parse_payload(completion.content)
-            except StructuredDetectionError:
-                retry_prompt = f"{prompt}\n\n{_JSON_RETRY_INSTRUCTION}"
-                completion, elapsed = self._complete(retry_prompt)
-                llm_seconds += elapsed
-                completions.append(completion)
-                payload = _parse_payload(completion.content)
-            invalid_fields = _unexpected_english_fields(payload, russian_transcript)
-            if invalid_fields:
-                retry_prompt = f"{prompt}\n\n{_RUSSIAN_RETRY_INSTRUCTION}"
-                completion, elapsed = self._complete(retry_prompt)
-                llm_seconds += elapsed
-                completions.append(completion)
-                payload = _parse_payload(completion.content)
-                invalid_fields = _unexpected_english_fields(
-                    payload,
-                    russian_transcript,
+            current_prompt = prompt
+            window_seconds = 0.0
+            for attempt in range(2):
+                completion, elapsed = self._complete(
+                    current_prompt, operation=str(start_index), attempt=attempt,
                 )
-                if invalid_fields:
-                    fields = ", ".join(invalid_fields)
-                    raise StructuredDetectionError(
-                        "LLM detection response is not in Russian: " + fields
+                window_seconds += elapsed
+                llm_seconds += elapsed
+                completions.append(completion)
+                try:
+                    payload = _parse_payload(completion.content)
+                    violations = []
+                    invalid_fields = _unexpected_english_fields(payload, russian_transcript)
+                    if invalid_fields:
+                        violations.append(
+                            "LLM detection response is not in Russian: "
+                            + ", ".join(invalid_fields)
+                        )
+                    # Check every item locally and collect grounding/format
+                    # problems together with language violations.
+                    window_issues = []
+                    for raw in payload["issues"]:
+                        try:
+                            window_issues.extend(_validated_issues(
+                                {"issues": [raw]}, allowed_ids=allowed_ids,
+                                segment_map=segment_map,
+                            ))
+                        except StructuredDetectionError as exc:
+                            violations.append(str(exc))
+                    if violations:
+                        raise StructuredDetectionError("; ".join(violations))
+                    break
+                except StructuredDetectionError as exc:
+                    if attempt == 1:
+                        raise
+                    current_prompt = (
+                        prompt + "\n\nКРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ФОРМАТА И ТРАССИРУЕМОСТИ:\n"
+                        + str(exc) + "\nВерни полный валидный JSON. Верни результат "
+                        "на русском языке. Все значения и segment_ids должны "
+                        "соответствовать выбранным репликам стенограммы."
                     )
-            try:
-                window_issues = _validated_issues(
-                    payload,
-                    allowed_ids=allowed_ids,
-                    segment_map=segment_map,
-                )
-            except TraceabilityDetectionError:
-                retry_prompt = f"{prompt}\n\n{_TRACEABILITY_RETRY_INSTRUCTION}"
-                completion, elapsed = self._complete(retry_prompt)
-                llm_seconds += elapsed
-                completions.append(completion)
-                payload = _parse_payload(completion.content)
-                invalid_fields = _unexpected_english_fields(
-                    payload,
-                    russian_transcript,
-                )
-                if invalid_fields:
-                    fields = ", ".join(invalid_fields)
-                    raise StructuredDetectionError(
-                        "LLM detection response is not in Russian: " + fields
-                    )
-                window_issues = _validated_issues(
-                    payload,
-                    allowed_ids=allowed_ids,
-                    segment_map=segment_map,
-                )
             detected.extend(window_issues)
+            saved_windows[str(start_index)] = {
+                "issues": [asdict(issue) for issue in window_issues],
+                "llm_seconds": window_seconds,
+            }
+            if on_progress:
+                on_progress()
 
         issues = _deduplicate(detected, segment_map, self.config)
         issues = [replace(issue, id=f"ISSUE_{index:03d}") for index, issue in enumerate(issues, 1)]
@@ -266,9 +255,12 @@ class NormativeIssueDetector:
             ),
         )
 
-    def _complete(self, prompt: str) -> tuple[LLMCompletion, float]:
+    def _complete(
+        self, prompt: str, *, operation: str, attempt: int,
+    ) -> tuple[LLMCompletion, float]:
         started = perf_counter()
-        completion = self.llm_client.complete(
+        completion = generate(
+            self.llm_client, stage="detection", operation=operation, attempt=attempt,
             system_prompt=DETECTION_SYSTEM_PROMPT,
             user_prompt=prompt,
             temperature=self.config.temperature,

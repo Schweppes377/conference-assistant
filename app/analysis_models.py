@@ -14,6 +14,7 @@ STATUS_PARTIAL_INFORMATION = "partial_information"
 STATUS_INSUFFICIENT_INFORMATION = "insufficient_information"
 STATUS_POTENTIAL_NONCOMPLIANCE = "potential_noncompliance"
 STATUS_PROCESSING_ERROR = "processing_error"
+STATUS_PENDING = "pending"
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,6 +121,8 @@ class MeetingStatistics:
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     total_tokens: int | None = None
+    pending_issues: int = 0
+    llm_usage: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,6 +134,9 @@ class MeetingAnalysis:
     transcript: list[TranscriptSegment]
     detected_issues: list[AnalyzedIssue]
     statistics: MeetingStatistics
+    run_status: str = "completed"
+    stop_reason: str | None = None
+    checkpoint_file: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable result."""

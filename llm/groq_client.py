@@ -34,7 +34,7 @@ class GroqClient(LLMClient):
         model: str,
         timeout_seconds: float = 60.0,
         http_client: httpx.Client | None = None,
-        max_retries: int = 2,
+        max_retries: int = 0,
         retry_delay_seconds: float = 0.75,
     ) -> None:
         if not api_key.strip():
@@ -60,7 +60,7 @@ class GroqClient(LLMClient):
         model: str,
         timeout_seconds: float = 60.0,
         http_client: httpx.Client | None = None,
-        max_retries: int = 2,
+        max_retries: int = 0,
         retry_delay_seconds: float = 0.75,
     ) -> "GroqClient":
         """Create a client using only GROQ_API_KEY from the environment."""
@@ -132,14 +132,22 @@ class GroqClient(LLMClient):
             },
         )
         payload = self._response_json(response)
+        usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else {}
+        empty_completion = LLMCompletion(
+            content="", model=str(payload.get("model") or self._model),
+            prompt_tokens=_optional_int(usage.get("prompt_tokens")),
+            completion_tokens=_optional_int(usage.get("completion_tokens")),
+            total_tokens=_optional_int(usage.get("total_tokens")),
+        )
         try:
             content = payload["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
-            raise EmptyResponseError("Groq returned no answer content") from exc
+            raise EmptyResponseError(
+                "Groq returned no answer content", completion=empty_completion,
+            ) from exc
         if not isinstance(content, str) or not content.strip():
-            raise EmptyResponseError("Groq returned an empty answer")
+            raise EmptyResponseError("Groq returned an empty answer", completion=empty_completion)
 
-        usage = payload.get("usage") if isinstance(payload.get("usage"), dict) else {}
         return LLMCompletion(
             content=content.strip(),
             model=str(payload.get("model") or self._model),

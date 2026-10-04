@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 
 from dotenv import load_dotenv
@@ -13,6 +14,7 @@ from llm.config import QAConfig
 from llm.groq_client import GroqClient
 from llm.models import CitationValidationError, QAResult, SourceMetadataError
 from llm.service import QuestionAnsweringService
+from llm.runtime import RunLLMClient, pause_message
 from rag.config import PROJECT_ROOT, RAGConfig
 from rag.retriever import IndexNotReadyError, SemanticRetriever
 from utils.console import configure_utf8_console
@@ -137,6 +139,7 @@ def main() -> int:
     configure_utf8_console()
     load_dotenv(PROJECT_ROOT / ".env", override=False)
     args = _parse_args()
+    runtime = None
     try:
         config = _config_from_args(args)
         client = GroqClient.from_env(
@@ -151,10 +154,11 @@ def main() -> int:
         question = " ".join(args.question).strip()
         if not question:
             raise ValueError("Provide a question or use --list-models")
-
+        budget = int(os.getenv("MAX_LLM_CALLS_PER_RUN", "2"))
+        runtime = RunLLMClient(client, max_calls=budget)
         service = QuestionAnsweringService(
             retriever=SemanticRetriever(RAGConfig()),
-            llm_client=client,
+            llm_client=runtime,
             config=config,
         )
         result = service.answer(question)
@@ -164,7 +168,7 @@ def main() -> int:
             _print_result(result, debug=args.debug)
         return 0
     except LLMError as exc:
-        print(f"Ошибка: {exc}", file=sys.stderr)
+        print(f"Ошибка: {pause_message(exc)}", file=sys.stderr)
         if args.debug and exc.diagnostic is not None:
             _print_http_diagnostic(exc.diagnostic)
         return 1
@@ -179,6 +183,9 @@ def main() -> int:
     except Exception as exc:
         print(f"Неожиданная ошибка Question → RAG → LLM: {exc}", file=sys.stderr)
         return 1
+    finally:
+        if args.debug and runtime is not None:
+            print("LLM usage: " + json.dumps(runtime.metrics(), ensure_ascii=False), file=sys.stderr)
 
 
 if __name__ == "__main__":

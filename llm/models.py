@@ -16,6 +16,10 @@ class CitationValidationError(ValueError):
     """Raised when the LLM cites a source ID absent from supplied context."""
 
 
+class ContextValidationError(CitationValidationError):
+    """Required evidence is absent; identical context cannot fix this locally."""
+
+
 @dataclass(frozen=True, slots=True)
 class SourceEvidence:
     """A retrieved chunk tied to trustworthy ChromaDB metadata."""
@@ -86,6 +90,36 @@ class QATimings:
     retrieval_seconds: float
     llm_seconds: float
     total_seconds: float
+
+
+@dataclass(frozen=True, slots=True)
+class PreparedQuestion:
+    """Exact retrieved context saved before generation for cheap resume."""
+
+    question: str
+    validation_input: str
+    retrieved_candidates: list[SourceEvidence]
+    context_sources: list[SourceEvidence]
+    retrieval_seconds: float
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "PreparedQuestion":
+        for raw in [*data["retrieved_candidates"], *data["context_sources"]]:
+            if (not isinstance(raw.get("page"), int) or raw["page"] < 1
+                    or not all(isinstance(raw.get(name), str) and raw[name].strip()
+                               for name in ("source_id", "document", "chunk_id", "text"))):
+                raise SourceMetadataError("Saved retrieval has invalid source metadata")
+        available = {s["source_id"]: s for s in data["retrieved_candidates"]}
+        if len(available) != len(data["retrieved_candidates"]):
+            raise SourceMetadataError("Saved retrieval contains duplicate source IDs")
+        if any(available.get(s["source_id"]) != s for s in data["context_sources"]):
+            raise SourceMetadataError("Saved context does not match retrieved candidates")
+        return cls(
+            question=data["question"], validation_input=data["validation_input"],
+            retrieved_candidates=[SourceEvidence(**s) for s in data["retrieved_candidates"]],
+            context_sources=[SourceEvidence(**s) for s in data["context_sources"]],
+            retrieval_seconds=data["retrieval_seconds"],
+        )
 
 
 @dataclass(frozen=True, slots=True)

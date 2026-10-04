@@ -4,7 +4,7 @@ import unittest
 
 from llm.base import LLMClient, LLMCompletion
 from llm.config import QAConfig
-from llm.models import CitationValidationError, SourceMetadataError
+from llm.models import CitationValidationError, ContextValidationError, SourceMetadataError
 from llm.prompts import INSUFFICIENT_CONTEXT_ANSWER, PARTIAL_CONTEXT_MARKER
 from llm.service import QuestionAnsweringService
 from rag.models import SearchResult
@@ -376,7 +376,7 @@ class QuestionAnsweringServiceTests(unittest.TestCase):
 
         self.assertEqual(len(answer.cited_sources), 1)
 
-    def test_invalid_number_gets_one_conservative_retry(self) -> None:
+    def test_value_absent_from_all_context_does_not_retry(self) -> None:
         result = _result(
             title="Защита от шума",
             designation="СП 54.13330.2022",
@@ -397,10 +397,9 @@ class QuestionAnsweringServiceTests(unittest.TestCase):
             config=QAConfig(),
         )
 
-        answer = service.answer("Каковы дневные и ночные уровни шума?")
-
-        self.assertEqual(llm.calls, 2)
-        self.assertTrue(answer.partial_context)
+        with self.assertRaises(ContextValidationError):
+            service.answer("Каковы дневные и ночные уровни шума?")
+        self.assertEqual(llm.calls, 1)
 
     def test_retry_can_correct_citation_to_chunk_containing_number(self) -> None:
         general = _result(

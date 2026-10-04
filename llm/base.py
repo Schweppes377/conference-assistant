@@ -79,6 +79,12 @@ class ModelUnavailableError(LLMError):
 class EmptyResponseError(LLMError):
     """Raised when the provider returns no usable answer text."""
 
+    def __init__(
+        self, message: str, *, completion: LLMCompletion | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.completion = completion
+
 
 class LLMClient(ABC):
     """Interface that keeps RAG orchestration independent of the provider."""
