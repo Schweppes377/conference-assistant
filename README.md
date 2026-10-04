@@ -6,11 +6,11 @@
 
 1. аудио → ASR (faster-whisper) → диаризация (pyannote) → структурированная стенограмма;
 2. нормативные PDF → извлечение текста → chunks → embeddings → локальная ChromaDB → semantic retrieval.
-3. текстовый вопрос → semantic retrieval → проверенный контекст → Groq LLM → ответ с источниками.
+3. текстовый вопрос → semantic retrieval → проверенный контекст → GigaChat LLM → ответ с источниками.
 
 Контур Question → RAG → LLM работает независимо от стенограммы. Автоматическая обработка реплик совещания, UI, API и real-time относятся к следующим этапам.
 
-Также доступен первый offline end-to-end контур: аудио совещания → стенограмма → выявление нормативно значимых фрагментов с учётом соседних реплик → существующий RAG → grounded-ответы Groq → JSON и Markdown-отчёт.
+Также доступен первый offline end-to-end контур: аудио совещания → стенограмма → выявление нормативно значимых фрагментов с учётом соседних реплик → существующий RAG → grounded-ответы GigaChat → JSON и Markdown-отчёт.
 
 ## Окружение
 
@@ -42,16 +42,22 @@
 HF_TOKEN=ваш_токен
 ~~~
 
-Для Groq LLM в том же локальном .env нужна переменная:
+Для GigaChat LLM в том же локальном .env нужна переменная:
 
 ~~~dotenv
-GROQ_API_KEY=ваш_ключ
-GROQ_MODEL=openai/gpt-oss-120b
+SBER_ULTRA=ваш_ключ
+GIGACHAT_MODEL=GigaChat-3-Ultra
 ~~~
 
-GROQ_MODEL необязательна: по умолчанию используется openai/gpt-oss-120b. Выбранная модель проверяется через Groq Models API, и при её недоступности автоматического переключения не происходит.
+GIGACHAT_MODEL необязательна: по умолчанию используется GigaChat-3-Ultra. Автоматического переключения модели нет. `--list-models` запрашивает доступные модели отдельно; обычная генерация не делает лишнего запроса списка моделей.
 
-HF_TOKEN применяется только для pyannote, GROQ_API_KEY — только для Groq. RAG использует публичную embedding-модель и секретов не требует. Не добавляйте реальные токены в README или Git; .env уже находится в .gitignore.
+Официальный SDK: `gigachat==0.2.3`, base URL `https://api.giga.chat/v1`, scope `GIGACHAT_API_PERS`. Ключ авторизации читается только из `SBER_ULTRA`; SDK самостоятельно получает OAuth access token. Для текущего Windows-подключения проверка сертификата отключена **только у клиента GigaChat**. Её можно включить переменной `GIGACHAT_VERIFY_SSL_CERTS=true`; это не меняет настройки Python/Windows/proxy. Таймаут: `LLM_TIMEOUT_SECONDS` (по умолчанию 60 с).
+
+Detection запрашивает нативный `json_schema` / `strict=true` через SDK; это beta/best-effort возможность SDK, поэтому прежние локальные проверки JSON, языка и привязки к стенограмме сохраняются. Ответы остаются текстовыми с прежними проверками источников и чисел. SDK network retries отключены (`max_retries=0`); допускается только один существующий corrective retry. HTTP 429 приостанавливает обработку с сохранением progress, без длительного sleep.
+
+Новые progress/analysis содержат `llm_provider` и `llm_model`. `--resume` запрещает смешивать уже полученные результаты разных или неизвестных моделей. Для нового эксперимента используйте `--transcript <старый_progress.json>` или `--issues <старый_analysis.json> --reanswer`: аудиоэтап не повторяется. Исторические файлы не изменяются.
+
+HF_TOKEN применяется только для pyannote, SBER_ULTRA — только для GigaChat. RAG использует публичную embedding-модель и секретов не требует. Не добавляйте реальные токены в README или Git; .env уже находится в .gitignore.
 
 ## Транскрипция аудио
 
@@ -149,7 +155,7 @@ python -m rag.search "доступность входа для маломоби�
   → фильтрация по relevance score
   → полный контекст из найденных chunks и metadata
   → provider-independent LLMClient
-  → Groq Chat Completions
+  → GigaChat Chat Completions
   → ответ + проверенные источники из ChromaDB metadata
 ~~~
 
@@ -166,7 +172,7 @@ python -m llm.ask "Какие требования предъявляются к
 python -m llm.ask "Какие требования предъявляются к эвакуационным выходам?" --json
 ~~~
 
-Проверить модели, доступные конкретному Groq API-ключу:
+Проверить модели, доступные конкретному GigaChat API-ключу:
 
 ~~~powershell
 python -m llm.ask --list-models
@@ -174,7 +180,7 @@ python -m llm.ask --list-models
 
 Настройки по умолчанию:
 
-- модель: openai/gpt-oss-120b;
+- модель: GigaChat-3-Ultra;
 - кандидатов retrieval до reranking: 20;
 - финальных chunks после reranking (TOP_K): 5;
 - минимальный similarity score: 0.84;
@@ -182,7 +188,7 @@ python -m llm.ask --list-models
 - temperature: 0.1;
 - максимальный ответ: 1 200 tokens.
 
-Параметры переопределяются аргументами CLI или переменными GROQ_MODEL,
+Параметры переопределяются аргументами CLI или переменными GIGACHAT_MODEL,
 RAG_CANDIDATE_K, RAG_TOP_K, RAG_MAX_CONTEXT_CHARS, RAG_MIN_SCORE,
 LLM_TEMPERATURE и LLM_MAX_OUTPUT_TOKENS. Контекст ограничивается только целыми
 chunks: их текст не обрезается и не отделяется от metadata.
@@ -199,7 +205,7 @@ Retrieval выполняется в два этапа:
 
 LLM получает источники с внутренними идентификаторами SOURCE_1, SOURCE_2 и так далее. После ответа приложение сопоставляет цитаты с реальными title, designation, page и chunk_index из ChromaDB. Неизвестные SOURCE-ID отклоняются.
 
-Если ни один результат не достигает порога релевантности, Groq не вызывается, а программа отвечает:
+Если ни один результат не достигает порога релевантности, GigaChat не вызывается, а программа отвечает:
 
 ~~~text
 В найденных нормативных документах недостаточно информации для обоснованного ответа на этот вопрос.
@@ -238,7 +244,7 @@ Detector дополнительно формирует `search_terms`, сохр�
 нет конкретных дневных и ночных значений. В Markdown он отображается как
 «Нормативное требование найдено частично».
 
-## Экономия Groq и продолжение обработки
+## Экономия GigaChat и продолжение обработки
 
 Нормальный расход: один detection-вызов на окно стенограммы и один answer-вызов
 на вопрос. Все нарушения JSON, языка и grounding объединяются в один corrective
@@ -246,11 +252,11 @@ retry: максимум две генерации на окно. Для отве
 corrective retry; внешний pipeline не запускает ответ повторно. Citation,
 numeric, language и grounding validation выполняются локально. Если нормативное
 значение отсутствует во всех переданных chunks, ответ отклоняется локально
-(`processing_error`), без повторного обращения к Groq. Корректный частичный
+(`processing_error`), без повторного обращения к GigaChat. Корректный частичный
 ответ сохраняет `partial_information`.
 
 Любой HTTP 429 приостанавливает запуск сразу, в том числе при коротком ожидании.
-Программа показывает `retry-after`, тип лимита и безопасные детали в `--debug`;
+Программа показывает `retry-after`, если он предоставлен API, и безопасные детали в `--debug`;
 она не делает долгий sleep и не отправляет следующий вопрос. Временная сетевая
 ошибка также приостанавливает обработку. Код возврата CLI: 0 — завершено,
 3 — приостановлено/ошибка detection validation с сохранёнными результатами.
@@ -294,7 +300,7 @@ detection; уже готовые ответы сохраняются, стары
 .\run-direct.ps1 -m app.analyze_meeting --issues "data\results\ИМЯ_analysis.json" --reanswer --debug
 ~~~
 
-`--reanswer` создаёт новый эксперимент и заново расходует Groq на ответы; для
+`--reanswer` создаёт новый эксперимент и заново расходует GigaChat на ответы; для
 продолжения прерванного запуска следует использовать `--resume`.
 
 Budget по умолчанию рассчитывается как `2 × (число detection-окон + число вопросов)`.
@@ -316,16 +322,16 @@ Budget по умолчанию рассчитывается как `2 × (чис
 `run_llm_calls` (текущий процесс), `max_llm_calls_per_run`, `detection_tokens`,
 `answer_tokens`, `retry_tokens` и общие prompt/completion/total tokens. Счётчики
 накапливаются между resume и не удваиваются при replay cache. `retry_tokens` —
-часть общих токенов, а не дополнительное слагаемое. Проверка `/models` не является
+часть общих токенов, а не дополнительное слагаемое. Явный `--list-models` не является
 генерацией и в `llm_calls` не входит. HTTP 200 с пустым ответом тоже учитывается.
 Если usage не предоставлен API или после timeout расход неизвестен, ставится
 `usage_incomplete`. Старые analysis.json имеют неполный учёт; их прежние totals
 показываются отдельно как `historical_usage`, новые вызовы учитываются полностью.
 
-Безопасные mock/unit tests (Groq, embeddings и аудио не запускаются):
+Безопасные mock/unit tests (GigaChat, embeddings и аудио не запускаются):
 
 ~~~powershell
-.\run-direct.ps1 -m unittest app.test_api_budget app.test_issue_detection app.test_meeting_analysis llm.test_service llm.test_groq_client -v
+.\run-direct.ps1 -m unittest app.test_api_budget app.test_issue_detection app.test_meeting_analysis llm.test_service llm.test_gigachat_client -v
 ~~~
 
 ## Тесты

@@ -90,6 +90,15 @@ class LLMClient(ABC):
     """Interface that keeps RAG orchestration independent of the provider."""
 
     @property
+    def provider(self) -> str:
+        """Stable identity used to prevent mixing checkpoint experiments."""
+        return "unknown"
+
+    def complete_detection(self, **kwargs) -> LLMCompletion:
+        """Optional native structured output, with a portable text fallback."""
+        return self.complete(**kwargs)
+
+    @property
     @abstractmethod
     def model(self) -> str:
         """Return the configured provider model identifier."""

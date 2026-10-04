@@ -6,14 +6,14 @@ import os
 from dataclasses import dataclass
 
 
-DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
+DEFAULT_GIGACHAT_MODEL = "GigaChat-3-Ultra"
 
 
 @dataclass(frozen=True, slots=True)
 class QAConfig:
     """Configurable retrieval, context, and generation limits."""
 
-    model: str = DEFAULT_GROQ_MODEL
+    model: str = DEFAULT_GIGACHAT_MODEL
     top_k: int = 5
     candidate_k: int = 20
     max_context_chars: int = 12_000
@@ -45,14 +45,14 @@ class QAConfig:
         """Read optional non-secret overrides from environment variables."""
 
         return cls(
-            model=os.getenv("GROQ_MODEL", DEFAULT_GROQ_MODEL),
+            model=os.getenv("GIGACHAT_MODEL", DEFAULT_GIGACHAT_MODEL),
             top_k=_env_int("RAG_TOP_K", 5),
             candidate_k=_env_int("RAG_CANDIDATE_K", 20),
             max_context_chars=_env_int("RAG_MAX_CONTEXT_CHARS", 12_000),
             min_relevance_score=_env_float("RAG_MIN_SCORE", 0.84),
             temperature=_env_float("LLM_TEMPERATURE", 0.1),
             max_output_tokens=_env_int("LLM_MAX_OUTPUT_TOKENS", 1_200),
-            request_timeout_seconds=_env_float("GROQ_TIMEOUT_SECONDS", 60.0),
+            request_timeout_seconds=_env_float("LLM_TIMEOUT_SECONDS", 60.0),
         )
 
 

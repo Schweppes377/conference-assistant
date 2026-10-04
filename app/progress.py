@@ -68,7 +68,32 @@ def read_input(path: Path, *, mode: str) -> dict[str, Any]:
         state["detection_complete"] = True
         # Legacy totals may omit rejected responses; retain them separately.
         state["historical_usage"] = data.get("statistics", {})
+        state["llm_provider"] = data.get("llm_provider", "unknown")
+        state["llm_model"] = data.get("llm_model", "unknown")
     return state
+
+
+def check_llm_identity(state: dict[str, Any], *, provider: str, model: str) -> None:
+    """Reject mixed paid results, including legacy checkpoints without identity."""
+    identity = (state.get("llm_provider"), state.get("llm_model"))
+    if identity == (provider, model):
+        return
+    runtime = state.get("llm_runtime", {})
+    has_work = bool(state.get("answers") or runtime.get("responses")
+                    or state.get("detection_progress")
+                    or any(e.get("successful") for e in runtime.get("events", [])))
+    if has_work:
+        raise ValueError(
+            "Сохранённые LLM-результаты созданы другой или неизвестной моделью/provider "
+            f"({identity[0] or 'unknown'} / {identity[1] or 'unknown'}). "
+            "Нельзя смешивать эксперименты. Начните заново через --transcript <progress.json> "
+            "или --issues <analysis.json> --reanswer без повторного ASR/diarization."
+        )
+    # No successful generations to preserve: safely adopt current provider.
+    state["llm_provider"], state["llm_model"] = provider, model
+    if state.get("settings"):
+        state["settings"]["qa"]["model"] = model
+    runtime.get("events", []).clear()
 
 
 def _validate_transcript(raw: Any) -> list[dict[str, Any]]:

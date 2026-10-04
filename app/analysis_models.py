@@ -137,6 +137,8 @@ class MeetingAnalysis:
     run_status: str = "completed"
     stop_reason: str | None = None
     checkpoint_file: str | None = None
+    llm_provider: str = "unknown"
+    llm_model: str = "unknown"
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable result."""

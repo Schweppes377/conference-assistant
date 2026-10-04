@@ -15,7 +15,7 @@ from app.analysis_models import (
     STATUS_POTENTIAL_NONCOMPLIANCE, STATUS_PROCESSING_ERROR, STATUS_REQUIREMENT_FOUND,
 )
 from app.issue_detection import NormativeIssueDetector, StructuredDetectionError, _windows
-from app.progress import save_checkpoint
+from app.progress import save_checkpoint, check_llm_identity
 from app.transcript import TranscriptSegment, merge_transcript
 from llm.base import LLMError
 from llm.models import PreparedQuestion, SourceEvidence
@@ -59,6 +59,8 @@ class MeetingAnalysisPipeline:
         self.audio_loader = audio_loader
         self.checkpoint_path = checkpoint_path
         self.state = state if state is not None else {}
+        check_llm_identity(self.state, provider=qa_service.llm_client.provider,
+                           model=qa_service.llm_client.model)
         self.explicit_budget = max_llm_calls
         self.runtime = RunLLMClient(
             qa_service.llm_client, state=self.state.setdefault("llm_runtime", {}),
@@ -250,6 +252,7 @@ class MeetingAnalysisPipeline:
             transcript=transcript, detected_issues=issues, statistics=statistics,
             run_status=self.state["run_status"], stop_reason=self.state["stop_reason"],
             checkpoint_file=str(self.checkpoint_path) if self.checkpoint_path else None,
+            llm_provider=self.runtime.provider, llm_model=self.runtime.model,
         )
 
 

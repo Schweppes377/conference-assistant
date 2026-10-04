@@ -20,7 +20,7 @@ from app.reporting import save_meeting_analysis
 from app.transcript import TranscriptSegment
 from llm.base import APIUnavailableError, HTTPDiagnostic, LLMClient, LLMCompletion, RateLimitError
 from llm.config import QAConfig
-from llm.groq_client import GroqClient
+from llm.gigachat_client import GigaChatClient
 from llm.models import CitationValidationError, ContextValidationError
 from llm.runtime import LLMBudgetExceeded, RunLLMClient, generate, pause_message
 from llm.service import QuestionAnsweringService
@@ -34,7 +34,11 @@ class FakeClient(LLMClient):
 
     @property
     def model(self) -> str:
-        return "offline-test"
+        return "GigaChat-3-Ultra"
+
+    @property
+    def provider(self) -> str:
+        return "gigachat"
 
     def complete(self, **kwargs: object) -> LLMCompletion:
         self.prompts.append(str(kwargs["user_prompt"]))
@@ -80,8 +84,8 @@ def pipeline(client: LLMClient, retriever: FakeRetriever, **kwargs: object) -> M
 
 def limited(seconds: float = 1602) -> RateLimitError:
     return RateLimitError("rate limited", retry_after_seconds=seconds, diagnostic=HTTPDiagnostic(
-        429, "Rate limit reached on tokens per day (TPD)", "tokens", "rate_limit_exceeded",
-        "offline-test", "https://api.groq.com/openai/v1/chat/completions",
+        429, "API rate limit reached", "tokens", "rate_limit_exceeded",
+        "offline-test", "https://api.giga.chat/v1/chat/completions",
     ))
 
 
@@ -96,7 +100,7 @@ class APIBudgetTests(unittest.TestCase):
             stopped = FakeClient([payload, limited()])
             output = io.StringIO()
             with patch.object(cli, "load_dotenv"), patch.object(cli, "configure_utf8_console"), \
-                 patch.object(cli.GroqClient, "from_env", return_value=stopped), \
+                 patch.object(cli.GigaChatClient, "from_env", return_value=stopped), \
                  patch.object(cli, "SemanticRetriever", return_value=FakeRetriever()), \
                  patch("app.pipeline.MeetingTranscriptionPipeline", side_effect=AssertionError("No audio initialization")), \
                  patch("sys.argv", ["analyze", "--transcript", str(input_file), "--checkpoint", str(checkpoint),
@@ -108,7 +112,7 @@ class APIBudgetTests(unittest.TestCase):
             self.assertIn("successful_llm_calls", output.getvalue())
             resumed = FakeClient(["Ответ [SOURCE_1]."])
             with patch.object(cli, "load_dotenv"), patch.object(cli, "configure_utf8_console"), \
-                 patch.object(cli.GroqClient, "from_env", return_value=resumed), \
+                 patch.object(cli.GigaChatClient, "from_env", return_value=resumed), \
                  patch.object(cli, "SemanticRetriever", return_value=FakeRetriever()), \
                  patch("app.pipeline.MeetingTranscriptionPipeline", side_effect=AssertionError("No audio initialization")), \
                  patch("sys.argv", ["analyze", "--resume", str(checkpoint), "--results-dir", directory]), \
@@ -126,7 +130,7 @@ class APIBudgetTests(unittest.TestCase):
             input_file.write_text(json.dumps(previous.to_dict(), ensure_ascii=False), encoding="utf-8")
             client = FakeClient(["Обновлённый ответ [SOURCE_1]."])
             with patch.object(cli, "load_dotenv"), patch.object(cli, "configure_utf8_console"), \
-                 patch.object(cli.GroqClient, "from_env", return_value=client), \
+                 patch.object(cli.GigaChatClient, "from_env", return_value=client), \
                  patch.object(cli, "SemanticRetriever", return_value=FakeRetriever()), \
                  patch("sys.argv", ["analyze", "--issues", str(input_file), "--reanswer", "--results-dir", directory]), \
                  redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
@@ -219,7 +223,7 @@ class APIBudgetTests(unittest.TestCase):
             self.assertEqual(len(client.prompts), 3)
             self.assertEqual(partial.statistics.pending_issues, 2)
             self.assertIn("26 мин 42 с", partial.stop_reason)
-            self.assertIn("TPD", partial.stop_reason)
+            self.assertIn("ограничение LLM API", partial.stop_reason)
             self.assertEqual(partial.statistics.total_tokens, 30)
             state = read_input(path, mode="resume")
             self.assertIn("ISSUE_002", state["prepared"])
@@ -311,23 +315,20 @@ class APIBudgetTests(unittest.TestCase):
         self.assertEqual(final.run_status, "completed")
 
     def test_http_200_empty_response_tokens_are_counted(self) -> None:
-        posts = []
-        def handler(request: httpx.Request) -> httpx.Response:
-            if request.method == "GET":
-                return httpx.Response(200, json={"data": [{"id": "offline-test"}]})
-            posts.append(request)
-            return httpx.Response(200, json={
-                "choices": [{"message": {"content": "" if len(posts) == 1 else "Ответ [SOURCE_1]."}}],
-                "usage": {"prompt_tokens": 100, "completion_tokens": 20, "total_tokens": 120},
-            })
-        provider = GroqClient(api_key="offline-dummy", model="offline-test", http_client=httpx.Client(transport=httpx.MockTransport(handler)))
+        from unittest.mock import Mock
+        from types import SimpleNamespace as NS
+        sdk = Mock()
+        sdk.chat.side_effect = [NS(choices=[NS(message=NS(content=text))],
+            usage=NS(prompt_tokens=100, completion_tokens=20, total_tokens=120))
+            for text in ("", "Ответ [SOURCE_1].")]
+        provider = GigaChatClient(credentials="offline-dummy", model="offline-test", sdk_client=sdk)
         tracked = RunLLMClient(provider, max_calls=2)
         service = QuestionAnsweringService(retriever=FakeRetriever(), llm_client=tracked, config=QAConfig())
         answer = service.answer("Какие требования к объекту?")
         self.assertEqual(answer.total_tokens, 240)
         self.assertEqual(tracked.metrics()["total_tokens"], 240)
         self.assertEqual(tracked.metrics()["successful_llm_calls"], 2)
-        self.assertEqual(len(posts), 2)
+        self.assertEqual(sdk.chat.call_count, 2)
 
     def test_import_legacy_analysis_skips_completed_answers(self) -> None:
         transcript, payload = fixture(1)

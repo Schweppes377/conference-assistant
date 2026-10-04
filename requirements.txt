@@ -37,6 +37,7 @@ hf-xet==1.6.0
 httpcore==1.0.9
 httptools==0.8.0
 httpx==0.28.1
+gigachat==0.2.3
 huggingface_hub==1.32.0
 idna==3.20
 importlib_resources==7.1.0

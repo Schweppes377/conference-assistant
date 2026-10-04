@@ -18,7 +18,7 @@ from app.issue_detection import (
     StructuredDetectionError,
 )
 from app.meeting_analysis import EmptyTranscriptError, MeetingAnalysisPipeline
-from app.progress import read_input
+from app.progress import read_input, check_llm_identity
 from app.reporting import save_meeting_analysis
 from app.transcript import TranscriptSegment
 from asr import ASRError
@@ -29,7 +29,7 @@ from diarization import (
 )
 from llm.base import HTTPDiagnostic, LLMError
 from llm.config import QAConfig
-from llm.groq_client import GroqClient
+from llm.gigachat_client import GigaChatClient
 from llm.service import QuestionAnsweringService
 from rag.config import PROJECT_ROOT, RAGConfig
 from rag.retriever import IndexNotReadyError, SemanticRetriever
@@ -53,7 +53,7 @@ def _build_parser() -> argparse.ArgumentParser:
                         help="Бюджет генераций; автоматически 2 × (окна detection + вопросы)")
     parser.add_argument("--language", default="ru", help="Язык Whisper или auto")
     parser.add_argument("--asr-model", default="medium", help="Модель faster-whisper")
-    parser.add_argument("--llm-model", default=None, help="Groq model ID")
+    parser.add_argument("--llm-model", default=None, help="GigaChat model ID")
     parser.add_argument(
         "--top-k",
         type=int,
@@ -103,6 +103,12 @@ def main() -> int:
         if args.reanswer:
             state["answers"] = {}
             state["prepared"] = {}
+            state.pop("historical_usage", None)
+            state.pop("llm_runtime", None)
+            state.pop("llm_provider", None)
+            state.pop("llm_model", None)
+        current_model = args.llm_model or QAConfig.from_env().model
+        check_llm_identity(state, provider="gigachat", model=current_model)
         settings = state.get("settings", {})
         qa_defaults = QAConfig(**settings["qa"]) if settings else QAConfig.from_env()
         overrides = {
@@ -125,7 +131,7 @@ def main() -> int:
             raise ValueError("Checkpoint уже существует. Используйте --resume или новый путь.")
         if not args.resume and checkpoint == (args.audio or text_input).resolve():
             raise ValueError("Checkpoint не может перезаписать исходный файл.")
-        llm_client = GroqClient.from_env(
+        llm_client = GigaChatClient.from_env(
             model=qa_config.model,
             timeout_seconds=qa_config.request_timeout_seconds,
         )
@@ -214,6 +220,9 @@ def _print_debug(analysis: MeetingAnalysis) -> None:
     stats = analysis.statistics
     timings = stats.timings
     print("\nDebug:")
+    provider = "GigaChat" if analysis.llm_provider == "gigachat" else analysis.llm_provider
+    print(f"LLM provider: {provider}")
+    print(f"LLM model: {analysis.llm_model}")
     print(f"ASR: {timings.asr_seconds:.3f} с")
     print(f"Diarization: {timings.diarization_seconds:.3f} с")
     print(
@@ -254,7 +263,7 @@ def _print_debug(analysis: MeetingAnalysis) -> None:
 def _print_http_diagnostic(diagnostic: HTTPDiagnostic) -> None:
     print(f"  HTTP status: {diagnostic.status}", file=sys.stderr)
     print(
-        f"  Error message: {diagnostic.message or 'not provided by Groq'}",
+        f"  Error message: {diagnostic.message or 'not provided by GigaChat'}",
         file=sys.stderr,
     )
     print(f"  Error type: {diagnostic.error_type or 'not provided'}", file=sys.stderr)

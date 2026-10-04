@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import re
 from dataclasses import asdict
 from typing import Any, Callable
 
@@ -48,6 +47,10 @@ class RunLLMClient(LLMClient):
     def model(self) -> str:
         return self.client.model
 
+    @property
+    def provider(self) -> str:
+        return self.client.provider
+
     def complete(self, **kwargs: Any) -> LLMCompletion:
         return self.generate(
             stage="answer", operation=f"standalone:{len(self.state['events'])}",
@@ -61,7 +64,7 @@ class RunLLMClient(LLMClient):
             raise GenerationLimitExceeded("Допускается не более двух генераций.")
         key = f"{stage}:{operation}:{attempt}"
         fingerprint = hashlib.sha256(json.dumps(
-            {"model": self.model, **kwargs}, ensure_ascii=False, sort_keys=True,
+            {"provider": self.provider, "model": self.model, **kwargs}, ensure_ascii=False, sort_keys=True,
         ).encode("utf-8")).hexdigest()
         saved = self.state["responses"].get(key)
         if saved is not None:
@@ -86,7 +89,8 @@ class RunLLMClient(LLMClient):
         self.state["events"].append(event)
         self.on_change()
         try:
-            completion = self.client.complete(**kwargs)
+            completion = (self.client.complete_detection(**kwargs) if stage == "detection"
+                          else self.client.complete(**kwargs))
         except EmptyResponseError as exc:
             # HTTP 200 with unusable text is still a paid, successful response.
             completion = getattr(exc, "completion", None)
@@ -119,6 +123,7 @@ class RunLLMClient(LLMClient):
                 result[name] = sum(values) if values else None
             return result
         return {
+            "llm_provider": self.provider, "llm_model": self.model,
             **tokens(events),
             "detection_tokens": tokens([e for e in events if e["stage"] == "detection"]),
             "answer_tokens": tokens([e for e in events if e["stage"] == "answer"]),
@@ -143,7 +148,7 @@ def generate(
     """Use a tracked session when present, otherwise preserve client contract."""
     if isinstance(client, RunLLMClient):
         return client.generate(stage=stage, operation=operation, attempt=attempt, **kwargs)
-    return client.complete(**kwargs)
+    return client.complete_detection(**kwargs) if stage == "detection" else client.complete(**kwargs)
 
 
 def pause_message(exc: Exception) -> str:
@@ -151,23 +156,14 @@ def pause_message(exc: Exception) -> str:
     if isinstance(exc, RateLimitError):
         delay = exc.retry_after_seconds
         diagnostic = exc.diagnostic
-        message = diagnostic.message if diagnostic else None
-        if delay is None and message:
-            match = re.search(r"try again in\s+(?:(\d+)m)?\s*(\d+(?:\.\d+)?)s", message, re.IGNORECASE)
-            if match:
-                delay = int(match[1] or 0) * 60 + float(match[2])
-        text = "Достигнут лимит Groq."
+        text = "Достигнуто ограничение LLM API. Прогресс сохранён."
         if delay is not None:
             minutes, seconds = divmod(math.ceil(delay), 60)
             text += f" Повторный запрос возможен примерно через {minutes} мин {seconds} с."
         else:
             text += " Время ожидания API не указано; продолжите позже."
         if diagnostic:
-            limit = next((kind for kind in ("TPD", "ITPM", "OTPM", "TPM", "RPD", "RPM")
-                          if message and re.search(rf"\b{kind}\b", message)), None)
             text += f" HTTP {diagnostic.status}."
-            if limit:
-                text += f" Тип лимита: {limit}."
         return text
     if isinstance(exc, APIUnavailableError):
         return f"API временно недоступен. Прогресс сохранён: {exc}"

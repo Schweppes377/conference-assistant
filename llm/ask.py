@@ -1,4 +1,4 @@
-"""CLI entry point for Question → RAG → Groq → grounded answer."""
+"""CLI entry point for Question → RAG → GigaChat → grounded answer."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 from llm.base import HTTPDiagnostic, LLMError
 from llm.config import QAConfig
-from llm.groq_client import GroqClient
+from llm.gigachat_client import GigaChatClient
 from llm.models import CitationValidationError, QAResult, SourceMetadataError
 from llm.service import QuestionAnsweringService
 from llm.runtime import RunLLMClient, pause_message
@@ -22,10 +22,10 @@ from utils.console import configure_utf8_console
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Answer a question using the local normative RAG index and Groq."
+        description="Answer a question using the local normative RAG index and GigaChat."
     )
     parser.add_argument("question", nargs="*", help="Question about normative documents")
-    parser.add_argument("--model", help="Groq model ID; overrides GROQ_MODEL")
+    parser.add_argument("--model", help="GigaChat model ID; overrides GIGACHAT_MODEL")
     parser.add_argument("--top-k", type=int, help="Number of retrieval results")
     parser.add_argument("--candidate-k", type=int, help="Number of reranking candidates")
     parser.add_argument("--max-context-chars", type=int, help="Maximum serialized context size")
@@ -37,7 +37,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--list-models",
         action="store_true",
-        help="List Groq models available to the configured API key",
+        help="List GigaChat models available to the configured API key",
     )
     return parser.parse_args()
 
@@ -118,12 +118,12 @@ def _print_result(result: QAResult, *, debug: bool) -> None:
 
 
 def _print_http_diagnostic(diagnostic: HTTPDiagnostic) -> None:
-    """Print an allow-listed subset of a failed Groq HTTP response."""
+    """Print an allow-listed subset of a failed GigaChat HTTP response."""
 
-    print("\nGroq HTTP debug:", file=sys.stderr)
+    print("\nGigaChat HTTP debug:", file=sys.stderr)
     print(f"  HTTP status: {diagnostic.status}", file=sys.stderr)
     print(
-        f"  Error message: {diagnostic.message or 'not provided by Groq'}",
+        f"  Error message: {diagnostic.message or 'not provided by GigaChat'}",
         file=sys.stderr,
     )
     print(f"  Error type: {diagnostic.error_type or 'not provided'}", file=sys.stderr)
@@ -142,7 +142,7 @@ def main() -> int:
     runtime = None
     try:
         config = _config_from_args(args)
-        client = GroqClient.from_env(
+        client = GigaChatClient.from_env(
             model=config.model,
             timeout_seconds=config.request_timeout_seconds,
         )
@@ -184,6 +184,10 @@ def main() -> int:
         print(f"Неожиданная ошибка Question → RAG → LLM: {exc}", file=sys.stderr)
         return 1
     finally:
+        if args.debug:
+            print("LLM provider: GigaChat", file=sys.stderr)
+            if 'config' in locals():
+                print(f"LLM model: {config.model}", file=sys.stderr)
         if args.debug and runtime is not None:
             print("LLM usage: " + json.dumps(runtime.metrics(), ensure_ascii=False), file=sys.stderr)
 
