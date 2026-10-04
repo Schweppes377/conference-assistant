@@ -27,9 +27,10 @@ from rag.reranker import rerank_candidates
 
 _SOURCE_CITATION = re.compile(r"\[\s*(SOURCE_\d+)\s*\]")
 _MEASURED_VALUE = re.compile(
-    r"(?P<value>\d+(?:[.,]\d+)?)\s*"
-    r"(?P<unit>м²|м2|см|мм|м|дб(?:а)?|%|процент(?:а|ов)?|"
-    r"чел(?:овек(?:а|ов)?)?)(?![A-Za-zА-Яа-яЁё])",
+    r"(?<![\w.,])(?P<value>\d+(?:[.,]\d+)?)\s*"
+    r"(?P<unit>м²|м2|кв\.\s*м|квадратн(?:ый|ых|ого)\s+метр(?:а|ов)?|"
+    r"сантиметр(?:а|ов)?|миллиметр(?:а|ов)?|метр(?:а|ов)?|см|мм|м|дб(?:а)?|%|процент(?:а|ов)?|"
+    r"чел(?:овек(?:а|ов)?)?)(?![A-Za-zА-Яа-яЁё\d²³])",
     re.IGNORECASE,
 )
 
@@ -302,10 +303,11 @@ def _validate_measured_values(
     claimed = _measurements(without_citations)
     if not claimed:
         return
-    allowed_text = " ".join(
-        [question, *(source.text for source in cited_sources)]
-    )
-    allowed = _measurements(allowed_text)
+    # Normalize each evidence text independently: joining unrelated chunks may
+    # accidentally combine a trailing number with the next chunk's unit.
+    allowed = _measurements(question)
+    for source in cited_sources:
+        allowed.update(_measurements(source.text))
     invented = sorted(claimed - allowed)
     if invented:
         guidance = []
@@ -325,11 +327,13 @@ def _validate_measured_values(
                 missing_context = True
                 guidance.append(formatted + " отсутствует во всем контексте")
         error_class = ContextValidationError if missing_context else CitationValidationError
-        raise error_class(
+        error = error_class(
             "LLM answer contains measured values absent from the question and "
             "cited chunks. Исправь ссылки или удали значения: "
             + "; ".join(guidance)
         )
+        error.diagnostics = _measurement_diagnostics(answer, question, cited_sources)
+        raise error
 
 
 def _validate_completion(
@@ -403,25 +407,78 @@ def _looks_partial(
 
 
 def _measurements(text: str) -> set[tuple[str, Decimal]]:
-    result: set[tuple[str, Decimal]] = set()
+    """Canonical dimension/value pairs, with exact Decimal unit conversion."""
+    return {(kind, value) for kind, value, _ in _measurement_matches(text)}
+
+
+def _measurement_matches(text: str) -> list[tuple[str, Decimal, str]]:
+    result = []
     for match in _MEASURED_VALUE.finditer(text):
         value = Decimal(match.group("value").replace(",", "."))
         unit = match.group("unit").casefold()
-        if unit == "мм":
-            result.add(("length_m", value / Decimal(1000)))
-        elif unit == "см":
-            result.add(("length_m", value / Decimal(100)))
-        elif unit == "м":
-            result.add(("length_m", value))
-        elif unit in {"м²", "м2"}:
-            result.add(("area_m2", value))
+        if unit in {"м²", "м2"} or unit.startswith(("кв.", "квадратн")):
+            kind = "area_m2"
+        elif unit == "мм" or unit.startswith("миллиметр"):
+            kind, value = "length_m", value / Decimal(1000)
+        elif unit == "см" or unit.startswith("сантиметр"):
+            kind, value = "length_m", value / Decimal(100)
+        elif unit == "м" or unit.startswith("метр"):
+            kind = "length_m"
         elif unit.startswith("дб"):
-            result.add(("noise_db", value))
+            kind = "noise_db"
         elif unit == "%" or unit.startswith("процент"):
-            result.add(("percent", value))
+            kind = "percent"
         else:
-            result.add(("people", value))
+            kind = "people"
+        result.append((kind, value, match.group(0)))
+    result.extend(_width_table_matches(text))
     return result
+
+
+def _width_table_matches(text: str) -> list[tuple[str, Decimal, str]]:
+    """Read width cells only in explicit width(m)/slope tables flattened by PDF.
+
+    Require a table heading, a dimensioned width header, an incline column,
+    and a numeric width immediately followed by a slope ratio. Other bare
+    numbers, document IDs, areas and the ratio components are not evidence.
+    """
+    result = []
+    for table in re.finditer(r"\bТаблица\s+\d+(?:\.\d+)*", text, re.IGNORECASE):
+        block = text[table.end():]
+        stop = re.search(r"\bТаблица\s+\d|П\s*р\s*и\s*м\s*е\s*ч\s*а\s*н\s*и\s*я", block, re.IGNORECASE)
+        block = block[:stop.start()] if stop else block
+        header = re.search(r"ширина\s*,\s*м(?![\w²])\s+уклон\b", block, re.IGNORECASE)
+        if not header:
+            continue
+        body = block[header.end():]
+        # A cell may defer to another code; remove these references, preserving
+        # offsets for debug evidence instead of mistaking an СП ID for a width.
+        cleaned = re.sub(r"По\s+СП\s+\d+(?:\.\d+)*", lambda m: " " * len(m[0]), body, flags=re.IGNORECASE)
+        for row in re.finditer(r"(?<![\w.,:])(?P<width>\d+(?:[.,]\d+)?)\s+"
+                               r"\d+(?:[.,]\d+)?\s*:\s*\d+(?:[.,]\d+)?(?![\w.,])", cleaned):
+            value = Decimal(row["width"].replace(",", "."))
+            result.append(("length_m", value, "ширина, м: " + body[row.start():row.end()]))
+    return result
+
+
+def _measurement_diagnostics(answer: str, question: str,
+                             cited_sources: Sequence[SourceEvidence]) -> list[dict]:
+    """Local debug evidence for each claim; never treats uncited chunks as allowed."""
+    units = {"length_m": "m", "area_m2": "m²", "noise_db": "dB", "percent": "%", "people": "people"}
+    question_values = _measurement_matches(question)
+    source_values = [(s.source_id, match) for s in cited_sources for match in _measurement_matches(s.text)]
+    diagnostics = []
+    for kind, value in sorted(_measurements(_SOURCE_CITATION.sub("", answer))):
+        q_matches = [f"{raw} -> {normalized} {units[kind]}"
+                     for dimension, normalized, raw in question_values if (dimension, normalized) == (kind, value)]
+        s_matches = [{"source_id": source_id, "text": raw, "canonical": f"{normalized} {units[kind]}"}
+                     for source_id, (dimension, normalized, raw) in source_values
+                     if (dimension, normalized) == (kind, value)]
+        diagnostics.append({"value": str(value), "dimension": kind,
+                            "canonical": f"{value} {units[kind]}",
+                            "question_matches": q_matches, "cited_source_matches": s_matches,
+                            "rejected": not (q_matches or s_matches)})
+    return diagnostics
 
 
 def _sum_tokens(completions: Sequence[object], name: str) -> int | None:

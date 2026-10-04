@@ -30,7 +30,8 @@ from diarization import (
 from llm.base import HTTPDiagnostic, LLMError
 from llm.config import QAConfig
 from llm.gigachat_client import GigaChatClient
-from llm.service import QuestionAnsweringService
+from llm.service import QuestionAnsweringService, _measurement_diagnostics, _resolve_citations
+from llm.models import SourceEvidence, CitationValidationError
 from rag.config import PROJECT_ROOT, RAGConfig
 from rag.retriever import IndexNotReadyError, SemanticRetriever
 from utils.audio import AudioDecodingError
@@ -201,7 +202,7 @@ def main() -> int:
         if analysis.run_status == "paused":
             print(f'.\\run-direct.ps1 -m app.analyze_meeting --resume "{analysis.checkpoint_file}" --debug')
     if args.debug:
-        _print_debug(analysis)
+        _print_debug(analysis, state=pipeline.state)
     return 0 if analysis.run_status == "completed" else 3
 
 
@@ -216,7 +217,7 @@ def _print_summary(analysis: MeetingAnalysis) -> None:
         print(f"- [{issue.id}] {issue.normalized_question} ({issue.status})")
 
 
-def _print_debug(analysis: MeetingAnalysis) -> None:
+def _print_debug(analysis: MeetingAnalysis, *, state: dict | None = None) -> None:
     stats = analysis.statistics
     timings = stats.timings
     print("\nDebug:")
@@ -258,6 +259,23 @@ def _print_debug(analysis: MeetingAnalysis) -> None:
             )
         if issue.error:
             print(f"  error={issue.error}")
+            if state and "ContextValidationError" in issue.error:
+                # Inspect the saved paid response locally; no generation/retrieval.
+                prepared = state.get("prepared", {}).get(issue.id, {})
+                responses = state.get("llm_runtime", {}).get("responses", {})
+                saved = [responses[key] for key in (f"answer:{issue.id}:0", f"answer:{issue.id}:1") if key in responses]
+                if saved:
+                    answer = saved[-1]["completion"]["content"]
+                    sources = [SourceEvidence(**s) for s in prepared.get("context_sources", [])]
+                    try:
+                        cited = _resolve_citations(answer, sources)
+                    except CitationValidationError:
+                        cited = []
+                    for detail in _measurement_diagnostics(answer, prepared.get("validation_input", issue.normalized_question), cited):
+                        if detail["rejected"]:
+                            print(f"  measured value: {detail['value']}; dimension: {detail['dimension']}; canonical: {detail['canonical']}")
+                            print(f"    question_matches: {detail['question_matches'] or 'none'}")
+                            print(f"    cited_source_matches: {detail['cited_source_matches'] or 'none'}")
 
 
 def _print_http_diagnostic(diagnostic: HTTPDiagnostic) -> None:
