@@ -72,18 +72,22 @@ def diarization_metrics(reference: list | None, hypothesis: list | None,
 
 
 def match_issues(reference: list, predicted: list, *, mode: str = "time", threshold: float = .5) -> list[tuple[int, int]]:
-    """Maximum-cardinality 1:1 matching using time IoU or segment-ID Jaccard.
+    """Maximum-cardinality 1:1 matching using time, segment IDs or text similarity.
 
-    This measures localization, not semantic correctness of the generated question.
+    Text mode uses fixed concept-prefix gates and character-trigram cosine.
+    Time/segments modes measure localization.
     No LLM or embeddings are involved. Threshold is fixed before evaluation.
     """
-    if mode not in ("time", "segments") or not 0 < threshold <= 1:
+    if mode not in ("time", "segments", "text") or not 0 < threshold <= 1:
         raise ValueError("Invalid matching mode/threshold")
     edges = []
     for ref in reference:
         candidates = []
         for index, pred in enumerate(predicted):
-            if mode == "segments":
+            if mode == "text":
+                from evaluation.content_metrics import issue_similarity
+                score = issue_similarity(ref, pred)
+            elif mode == "segments":
                 a, b = set(ref.get("segment_ids", [])), set(pred.get("segment_ids", []))
                 score = len(a & b) / len(a | b) if a | b else 0
             else:
@@ -112,13 +116,18 @@ def detection_metrics(reference: list | None, predicted: list, **matching) -> di
     if reference is None:
         return {"tp": None, "fp": None, "fn": None, "precision": None,
                 "recall": None, "f1": None, "reason": "reference data not provided"}
+    from evaluation.content_metrics import issue_similarity
     pairs = match_issues(reference, predicted, **matching)
     tp, fp, fn = len(pairs), len(predicted) - len(pairs), len(reference) - len(pairs)
     return {"tp": tp, "fp": fp, "fn": fn,
             "precision": tp / (tp + fp) if tp + fp else None,
             "recall": tp / (tp + fn) if tp + fn else None,
             "f1": 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else None,
-            "matches": pairs, "reason": None if reference or predicted else "no annotated positive examples"}
+            "matches": pairs, "unmatched_reference_ids": [r["id"] for i,r in enumerate(reference) if i not in dict(pairs)],
+            "unmatched_predicted_indices": [i for i in range(len(predicted)) if i not in dict(pairs).values()],
+            "pair_scores": [{"reference_id": reference[a]["id"], "predicted_index": b,
+                "score": issue_similarity(reference[a],predicted[b])} for a,b in pairs] if matching.get("mode") == "text" else [],
+            "reason": None if reference or predicted else "no annotated positive examples"}
 
 
 def is_relevant(source: dict, expected: dict) -> bool:
@@ -134,7 +143,8 @@ def retrieval_metrics(queries: list[dict]) -> dict:
     evaluated = [q for q in queries if q.get("available") and q.get("expected")]
     if not evaluated:
         return {"hit_at_1": None, "hit_at_3": None, "hit_at_5": None, "mrr": None,
-                "reason": "reference relevance or saved retrieval data not provided", "queries": queries}
+                "reason": "reference relevance or saved retrieval data not provided", "queries": queries,
+                "evaluated_queries": 0, "provided_queries": len(queries)}
     rows = []
     for query in evaluated:
         relevant = [any(is_relevant(s, e) for e in query["expected"]) for s in query["sources"]]
@@ -146,5 +156,7 @@ def retrieval_metrics(queries: list[dict]) -> dict:
     return {**{f"hit_at_{k}": sum(r[f"hit_at_{k}"] for r in rows) / len(rows) for k in (1, 3, 5)},
             "mrr": sum(r["reciprocal_rank"] for r in rows) / len(rows),
             "evaluated_queries": len(rows), "provided_queries": len(queries),
+            "query_coverage": len(rows)/len(queries) if queries else None,
+            "denominator_scope": "matched questions with available saved ranking; unmatched questions are reported, not scored as retrieval failures",
             "mrr_scope": "provided/truncated ranking, not the whole corpus",
             "per_query": rows, "queries": queries, "reason": None}

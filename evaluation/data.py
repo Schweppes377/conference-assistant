@@ -44,8 +44,9 @@ def validate_dataset(data: dict) -> None:
     if not isinstance(data, dict) or data.get("schema_version") != 1:
         raise ValueError("Evaluation dataset must be an object with schema_version=1")
     matching = data.get("matching", {})
-    if (not isinstance(matching, dict) or matching.get("mode", "time") not in ("time", "segments")
+    if (not isinstance(matching, dict) or matching.get("mode", "time") not in ("time", "segments", "text")
             or not isinstance(matching.get("threshold", .5), (int, float))
+            or isinstance(matching.get("threshold", .5), bool)
             or not 0 < matching.get("threshold", .5) <= 1):
         raise ValueError("Invalid issue matching policy")
     der = data.get("der", {})
@@ -58,6 +59,34 @@ def validate_dataset(data: dict) -> None:
             if name == "reference_transcript" and isinstance(value, str):
                 continue
             validate_turns(value, text_required=name == "reference_transcript")
+    utterances = data.get("reference_utterances")
+    if utterances is not None:
+        if not isinstance(utterances, list) or not utterances:
+            raise ValueError("reference_utterances must be a nonempty array")
+        ids = []
+        for turn in utterances:
+            if (not isinstance(turn, dict) or not isinstance(turn.get("id"), str)
+                    or not isinstance(turn.get("text"), str) or not turn["text"].strip()
+                    or turn.get("speaker") not in ("REF_SPEAKER_01", "REF_SPEAKER_02")):
+                raise ValueError("Reference utterance requires ID, text and reference speaker")
+            ids.append(turn["id"])
+        if len(ids) != len(set(ids)):
+            raise ValueError("Duplicate reference utterance IDs")
+    policy = data.get("speaker_attribution", {})
+    coverage = policy.get("min_word_coverage", .5)
+    if isinstance(coverage, bool) or not isinstance(coverage, (int,float)) or not 0 < coverage <= 1:
+        raise ValueError("Invalid speaker attribution coverage")
+    verification = data.get("verification")
+    if verification is not None:
+        if not isinstance(verification, dict) or verification.get("status") not in ("pending", "verified"):
+            raise ValueError("Invalid verification status")
+        if verification["status"] == "verified":
+            if not utterances or not all(t.get("confirmed") is True for t in utterances):
+                raise ValueError("Verified dataset requires confirmed utterances")
+            if data.get("reference_transcript") != " ".join(t["text"].strip() for t in utterances):
+                raise ValueError("Reference transcript must equal confirmed utterance text")
+            if not data.get("reference_issues") or not all(i.get("confirmed") is True for i in data["reference_issues"]):
+                raise ValueError("Verified dataset requires confirmed issues")
     issues = data.get("reference_issues")
     if issues is not None:
         if not isinstance(issues, list) or any(not isinstance(i, dict) or not isinstance(i.get("id"), str) for i in issues):
@@ -70,6 +99,12 @@ def validate_dataset(data: dict) -> None:
                 validate_turns([{**issue, "speaker": "reference"}])
                 if issue["end"] <= issue["start"]:
                     raise ValueError("Reference issue interval must have positive duration")
+            elif mode == "text":
+                if not isinstance(issue.get("question"), str) or not issue["question"].strip():
+                    raise ValueError("Text matching requires a reference question")
+                groups = issue.get("match_concepts", [])
+                if not isinstance(groups, list) or any(not isinstance(g,list) or not g or any(not isinstance(s,str) or not s for s in g) for g in groups):
+                    raise ValueError("Invalid content concept groups")
             elif not isinstance(issue.get("segment_ids"), list) or not issue["segment_ids"]:
                 raise ValueError("Segment matching requires nonempty segment_ids")
             if issue.get("expected_sources") is not None:

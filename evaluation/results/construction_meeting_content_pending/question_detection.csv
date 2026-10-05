@@ -1,0 +1,2 @@
+﻿tp,fp,fn,precision,recall,f1,reason,method
+,,,,,,reference data not provided,"Maximum-cardinality one-to-one matching; character-trigram count cosine; AND concept groups / OR prefix alternatives; candidate order descending score then prediction index; augment reference order. No timestamps, answers, retrieval or LLM used."

@@ -1,0 +1,16 @@
+{
+  "json_syntax": true,
+  "json_schema": true,
+  "runtime_validation": true,
+  "paths_exist": true,
+  "roles": 2,
+  "script_turns": 27,
+  "prepared_issues": 8,
+  "scorable_temporal_issues": 0,
+  "reference_diarization_intervals": 0,
+  "source_fragments": 19,
+  "parameters_unchanged": true,
+  "production_unchanged_before_evaluation": true,
+  "complete_ground_truth": false,
+  "audio_verification": false
+}

@@ -14,6 +14,7 @@ from pathlib import Path
 from evaluation.data import (ROOT, read_json, resolve_file, validate_analysis,
                              validate_dataset, audio_duration, performance_metrics)
 from evaluation.metrics import asr_metrics, diarization_metrics, detection_metrics, retrieval_metrics
+from evaluation.content_metrics import speaker_attribution_metrics
 from utils.console import configure_utf8_console
 
 
@@ -21,16 +22,21 @@ def evaluate(dataset: dict, analysis: dict, *, progress: dict | None = None,
              reliability: dict | None = None, live_retrieval: bool = False) -> dict:
     validate_dataset(dataset)
     validate_analysis(analysis)
-    reference = dataset.get("reference_transcript")
+    confirmed = dataset.get("verification", {}).get("status") != "pending"
+    reference = dataset.get("reference_transcript") if confirmed else None
+    reference_issues = dataset.get("reference_issues") if confirmed else None
     if isinstance(reference, list):
         reference = " ".join(t["text"] for t in sorted(reference, key=lambda t: t["start"]))
     hypothesis = " ".join(t["text"] for t in sorted(analysis["transcript"], key=lambda t: t["start"]))
+    ordered_transcript = sorted(analysis["transcript"], key=lambda t: t["start"])
     predicted = analysis["detected_issues"]
     matching = dataset.get("matching", {"mode": "time", "threshold": .5})
-    detected = detection_metrics(dataset.get("reference_issues"), predicted, **matching)
+    detected = detection_metrics(reference_issues, predicted, **matching)
     pairs = dict(detected.get("matches", []))
     queries = []
     service = None
+    if live_retrieval and not confirmed:
+        raise ValueError("Confirm ground truth before live retrieval")
     if live_retrieval:
         # Reuse the unchanged production preparation path, not another search.
         # HF offline flag prevents model downloads even on fallback code paths.
@@ -43,7 +49,7 @@ def evaluate(dataset: dict, analysis: dict, *, progress: dict | None = None,
         from rag.retriever import SemanticRetriever, IndexNotReadyError
         service = QuestionAnsweringService(retriever=SemanticRetriever(RAGConfig()),
                                            llm_client=None, config=QAConfig.from_env())
-    for index, issue in enumerate(dataset.get("reference_issues") or []):
+    for index, issue in enumerate(reference_issues or []):
         expected = issue.get("expected_sources")
         if not expected:
             continue
@@ -64,7 +70,9 @@ def evaluate(dataset: dict, analysis: dict, *, progress: dict | None = None,
             elif "retrieved_candidates" in predicted_issue:
                 sources, available, origin = predicted_issue["retrieved_candidates"], True, "saved reranked candidates (not exact final context)"
         queries.append({"reference_id": issue["id"], "expected": expected, "sources": sources,
-                        "available": available, "ranking_source": origin})
+                        "available": available, "ranking_source": origin,
+                        "matched_prediction_id": predicted[pairs[index]]["id"] if index in pairs else None,
+                        "reason": None if available else "question unmatched or ranking not saved"})
     duration = analysis.get("audio_duration_sec")
     duration_source = "saved measured duration" if duration is not None else None
     if duration is None:
@@ -72,7 +80,7 @@ def evaluate(dataset: dict, analysis: dict, *, progress: dict | None = None,
     if duration is not None and (not isinstance(duration, (int, float)) or not math.isfinite(duration) or duration <= 0):
         raise ValueError("Measured audio duration must be positive")
     status_checks = []
-    for index, issue in enumerate(dataset.get("reference_issues") or []):
+    for index, issue in enumerate(reference_issues or []):
         if issue.get("expected_status") is not None:
             actual = predicted[pairs[index]]["status"] if index in pairs else None
             status_checks.append({"reference_id": issue["id"], "expected": issue["expected_status"],
@@ -80,11 +88,15 @@ def evaluate(dataset: dict, analysis: dict, *, progress: dict | None = None,
     return {"schema_version": 1, "evaluated_at": datetime.now(timezone.utc).isoformat(),
             "dataset_id": dataset.get("id"), "llm_provider": analysis.get("llm_provider"),
             "llm_model": analysis.get("llm_model"), "asr": asr_metrics(reference, hypothesis),
-            "diarization": diarization_metrics(dataset.get("reference_diarization"), analysis.get("diarization_segments"),
+            "verification": dataset.get("verification", {"status": "legacy_unspecified"}),
+            "diarization": speaker_attribution_metrics(dataset.get("reference_utterances") if confirmed else None,
+                ordered_transcript, **dataset.get("speaker_attribution", {}))
+                if dataset.get("reference_utterances") is not None else diarization_metrics(dataset.get("reference_diarization"), analysis.get("diarization_segments"),
                 collar=dataset.get("der", {}).get("collar_sec", .25),
                 skip_overlap=dataset.get("der", {}).get("skip_overlap", False),
                 evaluation_regions=dataset.get("evaluation_regions")),
-            "question_detection": {**detected, "matching": matching},
+            "question_detection": {**detected, "matching": matching,
+                "method": "Maximum-cardinality one-to-one matching; character-trigram count cosine; AND concept groups / OR prefix alternatives; candidate order descending score then prediction index; augment reference order. No timestamps, answers, retrieval or LLM used." if matching.get("mode") == "text" else "legacy localization matching"},
             "retrieval": retrieval_metrics(queries),
             "performance": performance_metrics(analysis, duration, duration_source),
             "reliability": reliability or {"tests": None, "passed": None, "failed": None,
@@ -103,7 +115,7 @@ def save_results(summary: dict, directory: Path) -> None:
         values = {k: v for k, v in summary[name].items() if not isinstance(v, (list, dict))}
         with (directory / f"{name}.csv").open("w", encoding="utf-8-sig", newline="") as file:
             writer = csv.DictWriter(file, fieldnames=list(values)); writer.writeheader(); writer.writerow(values)
-    for name, rows in (("issues", summary["observed_issues"]), ("retrieval_queries", summary["retrieval"].get("per_query", []))):
+    for name, rows in (("speaker_attribution", summary["diarization"].get("per_utterance", [])), ("issues", summary["observed_issues"]), ("retrieval_queries", summary["retrieval"].get("per_query", []))):
         with (directory / f"{name}.csv").open("w", encoding="utf-8-sig", newline="") as file:
             fields = list(rows[0]) if rows else ["reference_id", "reason"]
             writer = csv.DictWriter(file, fieldnames=fields); writer.writeheader(); writer.writerows(rows)
@@ -138,6 +150,8 @@ def main() -> int:
         return 1
     print("Раздел                 Результат")
     for name, key in (("asr", "wer"), ("diarization", "der"), ("question_detection", "f1"), ("retrieval", "hit_at_5"), ("performance", "total_sec"), ("reliability", "success_rate")):
+        if name == "diarization" and "speaker_attribution_accuracy" in summary[name]:
+            key = "speaker_attribution_accuracy"
         value = summary[name].get(key)
         print(f"{name:22} {key}={value}" if value is not None else f"{name:22} SKIPPED — {summary[name].get('reason')}")
     print(f"Summary: {(args.output_dir / 'summary.json').resolve()}")

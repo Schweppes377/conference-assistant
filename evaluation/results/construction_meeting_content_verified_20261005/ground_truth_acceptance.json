@@ -1,0 +1,35 @@
+{
+  "schema_validation": true,
+  "runtime_validation": true,
+  "verification": {
+    "status": "verified",
+    "audio_sha256": "4d38020b78e77eed5333e8bd0a6e1d681485428fc886a395d13b1d3648925e78",
+    "verified_at": "2026-10-05T13:39:19.693Z"
+  },
+  "source": "user-exported HTML confirmation; agent did not independently listen",
+  "text_or_role_changes_from_script": 0,
+  "production_index_baseline_and_evaluator_unchanged": true,
+  "dataset_sha256": "079557a8a7e2454d6fbe6a3cbac96b030f480b67584c3ddc67910fe163ba8745",
+  "unmatched_utterances": [
+    {
+      "reference_id": "REF_TURN_015",
+      "reference_speaker": "REF_SPEAKER_01",
+      "hypothesis_speaker": null,
+      "word_coverage": 0.0,
+      "matched": false,
+      "speaker_votes": {},
+      "mapped_speaker": null,
+      "correct": false
+    },
+    {
+      "reference_id": "REF_TURN_017",
+      "reference_speaker": "REF_SPEAKER_01",
+      "hypothesis_speaker": null,
+      "word_coverage": 0.0,
+      "matched": false,
+      "speaker_votes": {},
+      "mapped_speaker": null,
+      "correct": false
+    }
+  ]
+}

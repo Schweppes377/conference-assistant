@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-10-05T13:21:55.277902+00:00",
+  "schema_validation": true,
+  "runtime_validation": true,
+  "production_and_baseline_and_index_unchanged": true,
+  "protected_files_checked": 164,
+  "expected_sources_unchanged": true,
+  "reference_utterances": 27,
+  "reference_issues": 8,
+  "source_fragments": 19,
+  "audio_verification": "pending",
+  "quality_metrics_blocked_until_confirmation": true,
+  "der_computed_for_construction_meeting": false,
+  "evaluation_tests_passed": 40,
+  "html_javascript_syntax": true,
+  "html_export_functional_checks": "passed using simulated DOM; visual browser rendering not tested",
+  "gigachat_called": false,
+  "model_inference_executed": false
+}

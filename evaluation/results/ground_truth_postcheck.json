@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-05T12:07:11.573441+00:00",
+  "reference_files_unchanged": true,
+  "production_files_unchanged": true,
+  "inputs_and_index_unchanged": true,
+  "schema_validation": true,
+  "runtime_validation": true,
+  "parameters_unchanged": true,
+  "complete_ground_truth": false,
+  "audio_verified": false
+}

@@ -1,0 +1,9 @@
+﻿reference_id,ranking_depth,hit_at_1,hit_at_3,hit_at_5,reciprocal_rank
+REF_ISSUE_001,5,False,True,True,0.5
+REF_ISSUE_002,5,True,True,True,1.0
+REF_ISSUE_003,5,False,True,True,0.3333333333333333
+REF_ISSUE_004,5,False,False,False,0
+REF_ISSUE_005,5,False,True,True,0.5
+REF_ISSUE_006,5,False,False,False,0
+REF_ISSUE_007,5,True,True,True,1.0
+REF_ISSUE_008,5,True,True,True,1.0

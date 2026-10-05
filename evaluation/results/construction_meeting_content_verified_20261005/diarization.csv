@@ -1,0 +1,2 @@
+﻿speaker_attribution_accuracy,reference_utterances,matched_utterances,unmatched_utterances,correct_utterances,incorrect_utterances,matching_coverage,min_word_coverage,method,reason
+1.0,27,25,2,25,0,0.9259259259259259,0.5,"Global word Levenshtein alignment, exact-word evidence only; ties diagonal/deletion/insertion; per-turn majority speaker; one-to-one anonymous label mapping maximizes correct matched turns; mapping ties use sorted labels. No timestamps scored.",

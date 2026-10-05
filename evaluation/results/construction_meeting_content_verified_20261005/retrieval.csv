@@ -1,0 +1,2 @@
+﻿hit_at_1,hit_at_3,hit_at_5,mrr,evaluated_queries,provided_queries,query_coverage,denominator_scope,mrr_scope,reason
+0.375,0.75,0.75,0.5416666666666666,8,8,1.0,"matched questions with available saved ranking; unmatched questions are reported, not scored as retrieval failures","provided/truncated ranking, not the whole corpus",

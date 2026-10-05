@@ -2,23 +2,305 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Offline meeting reference annotations, version 1",
   "type": "object",
-  "required": ["schema_version", "id", "audio_file"],
+  "required": [
+    "schema_version",
+    "id",
+    "audio_file"
+  ],
   "properties": {
-    "schema_version": {"const": 1},
-    "id": {"type": "string"},
-    "audio_file": {"type": "string"},
-    "hypothesis": {"type": "object", "properties": {"analysis_file": {"type": "string"}, "progress_file": {"type": "string"}}},
-    "reference_transcript": {"oneOf": [{"type": "null"}, {"type": "string"}, {"type": "array", "items": {"allOf": [{"$ref": "#/$defs/turn"}, {"required": ["text"], "properties": {"text": {"type": "string"}}}]}}]},
-    "reference_diarization": {"type": ["null", "array"], "items": {"$ref": "#/$defs/turn"}},
-    "evaluation_regions": {"type": ["null", "array"], "items": {"type": "object", "required": ["start", "end"], "properties": {"start": {"type": "number", "minimum": 0}, "end": {"type": "number", "minimum": 0}}}},
-    "reference_issues": {"type": ["null", "array"], "items": {"type": "object", "required": ["id"], "properties": {
-      "id": {"type": "string"}, "question": {"type": "string"}, "start": {"type": "number"}, "end": {"type": "number"},
-      "segment_ids": {"type": "array", "items": {"type": "string"}}, "search_terms": {"type": "array", "items": {"type": "string"}},
-      "expected_sources": {"type": ["null", "array"], "items": {"type": "object", "properties": {"document": {"type": "string"}, "designation": {"type": "string"}, "page": {"type": "integer", "minimum": 1}, "chunk_id": {"type": "string"}}}},
-      "expected_status": {"type": ["null", "string"]}, "expected_answer_facts": {"type": ["null", "array"], "items": {"type": "string"}}
-    }}},
-    "matching": {"type": "object", "properties": {"mode": {"enum": ["time", "segments"]}, "threshold": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}}},
-    "der": {"type": "object", "properties": {"collar_sec": {"type": "number", "minimum": 0}, "skip_overlap": {"type": "boolean"}}}
+    "schema_version": {
+      "const": 1
+    },
+    "id": {
+      "type": "string"
+    },
+    "audio_file": {
+      "type": "string"
+    },
+    "hypothesis": {
+      "type": "object",
+      "properties": {
+        "analysis_file": {
+          "type": "string"
+        },
+        "progress_file": {
+          "type": "string"
+        }
+      }
+    },
+    "reference_transcript": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/turn"
+              },
+              {
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "reference_diarization": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "$ref": "#/$defs/turn"
+      }
+    },
+    "evaluation_regions": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "properties": {
+          "start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "reference_issues": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "start": {
+            "type": "number"
+          },
+          "end": {
+            "type": "number"
+          },
+          "segment_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "search_terms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expected_sources": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "document": {
+                  "type": "string"
+                },
+                "designation": {
+                  "type": "string"
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "chunk_id": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "expected_status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expected_answer_facts": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "confirmed": {
+            "type": "boolean"
+          },
+          "match_concepts": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "matching": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "time",
+            "segments",
+            "text"
+          ]
+        },
+        "threshold": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "der": {
+      "type": "object",
+      "properties": {
+        "collar_sec": {
+          "type": "number",
+          "minimum": 0
+        },
+        "skip_overlap": {
+          "type": "boolean"
+        }
+      }
+    },
+    "reference_utterances": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "text",
+          "speaker"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "speaker": {
+            "enum": [
+              "REF_SPEAKER_01",
+              "REF_SPEAKER_02"
+            ]
+          },
+          "confirmed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "speaker_attribution": {
+      "type": "object",
+      "properties": {
+        "min_word_coverage": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "verification": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pending",
+            "verified"
+          ]
+        },
+        "audio_sha256": {
+          "type": "string"
+        },
+        "verified_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
   },
-  "$defs": {"turn": {"type": "object", "required": ["start", "end", "speaker"], "properties": {"start": {"type": "number", "minimum": 0}, "end": {"type": "number", "minimum": 0}, "speaker": {"type": "string", "minLength": 1}}}}
+  "$defs": {
+    "turn": {
+      "type": "object",
+      "required": [
+        "start",
+        "end",
+        "speaker"
+      ],
+      "properties": {
+        "start": {
+          "type": "number",
+          "minimum": 0
+        },
+        "end": {
+          "type": "number",
+          "minimum": 0
+        },
+        "speaker": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
 }

@@ -1,0 +1,2 @@
+﻿speaker_attribution_accuracy,reason,method
+,reference utterances not provided,"Global word Levenshtein alignment, exact-word evidence only; ties diagonal/deletion/insertion; per-turn majority speaker; one-to-one anonymous label mapping maximizes correct matched turns; mapping ties use sorted labels. No timestamps scored."

@@ -1,0 +1,214 @@
+{
+  "tests": 40,
+  "passed": 40,
+  "failed": 0,
+  "skipped": 0,
+  "collection_errors": 0,
+  "success_rate": 1.0,
+  "exit_status": 0,
+  "measured_at": "2026-10-05T13:19:08.578199+00:00",
+  "definition": "passed / (passed + failed + collection_errors); excludes skipped; not SLA",
+  "network_allowed": false,
+  "cases": {
+    "evaluation/test_content_evaluation.py::test_permuted_labels_and_split_segments": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000327299814671278
+    },
+    "evaluation/test_content_evaluation.py::test_wrong_attribution_cannot_be_repaired_by_per_turn_mapping": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000382099999114871
+    },
+    "evaluation/test_content_evaluation.py::test_missing_text_is_unmatched_not_in_accuracy_denominator": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00035460013896226883
+    },
+    "evaluation/test_content_evaluation.py::test_unknown_speaker_is_not_mapped_to_known_role": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019280007109045982
+    },
+    "evaluation/test_content_evaluation.py::test_tied_word_votes_are_incorrect_not_optimistically_assigned": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00020250002853572369
+    },
+    "evaluation/test_content_evaluation.py::test_word_alignment_is_deterministic_and_ignores_time_values": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00025739986449480057
+    },
+    "evaluation/test_content_evaluation.py::test_content_matching_no_times_duplicate_false_positive": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000704500125721097
+    },
+    "evaluation/test_content_evaluation.py::test_concept_gate_rejects_other_evacuation_topic": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019589997828006744
+    },
+    "evaluation/test_content_evaluation.py::test_similar_word_inflections_and_empty_strings": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002259998582303524
+    },
+    "evaluation/test_content_evaluation.py::test_content_integration_retrieval_and_export_without_der": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.005290900124236941
+    },
+    "evaluation/test_content_evaluation.py::test_pending_verification_blocks_all_quality_scores": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002405999694019556
+    },
+    "evaluation/test_content_evaluation.py::test_verified_text_must_equal_confirmed_turns": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0012314000632613897
+    },
+    "evaluation/test_content_evaluation.py::test_schema_new_and_legacy_formats": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.049389100167900324
+    },
+    "evaluation/test_content_evaluation.py::test_expected_sources_remain_frozen_in_new_dataset": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.020562800113111734
+    },
+    "evaluation/test_local_components.py::test_timestamp_merge_accumulates_overlap_and_unknown": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019649998284876347
+    },
+    "evaluation/test_local_components.py::test_document_metadata_and_retrieval_contract": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00027540000155568123
+    },
+    "evaluation/test_local_components.py::test_missing_documents_and_index_fail_before_loading_model": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003131998237222433
+    },
+    "evaluation/test_local_components.py::test_missing_and_empty_audio_do_not_invoke_models": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000682000070810318
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[42-transcript]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007115998305380344
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload1-resume]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008054999634623528
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload2-transcript]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008558998815715313
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload3-issues]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006695000920444727
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload4-resume]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007517000194638968
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload5-resume]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000705299898982048
+    },
+    "evaluation/test_local_components.py::test_invalid_json_and_atomic_progress_roundtrip": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.004079099977388978
+    },
+    "evaluation/test_local_components.py::test_audio_metadata_stages_without_model_execution": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.11686070007272065
+    },
+    "evaluation/test_local_components.py::test_resume_explicit_asr_and_diarization_spies": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.060208900133147836
+    },
+    "evaluation/test_metrics.py::test_text_normalization_does_not_hide_words_or_yo": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002586999908089638
+    },
+    "evaluation/test_metrics.py::test_edit_alignment_and_wer_counts": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000631299801170826
+    },
+    "evaluation/test_metrics.py::test_missing_and_empty_reference_not_fake_zero": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00035349978134036064
+    },
+    "evaluation/test_metrics.py::test_der_permutation_is_handled_by_standard_metric": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.008826599922031164
+    },
+    "evaluation/test_metrics.py::test_der_overlap_and_uem": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000893699936568737
+    },
+    "evaluation/test_metrics.py::test_question_matching_one_to_one_duplicate_is_fp": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00023210002109408379
+    },
+    "evaluation/test_metrics.py::test_maximum_matching_not_greedy_order": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00021989992819726467
+    },
+    "evaluation/test_metrics.py::test_threshold_and_invalid_annotations": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00021520000882446766
+    },
+    "evaluation/test_metrics.py::test_rag_ranks_page_identity_and_missing_queries": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002150998916476965
+    },
+    "evaluation/test_metrics.py::test_live_rag_reuses_existing_prepare_without_llm": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0004938000347465277
+    },
+    "evaluation/test_metrics.py::test_default_evaluation_skips_ground_truth_and_exports": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.010081900050863624
+    },
+    "evaluation/test_metrics.py::test_resume_latency_not_claimed_as_full_rtf": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002824000548571348
+    },
+    "evaluation/test_metrics.py::test_unexecuted_zero_stage_times_are_unavailable": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0005278999451547861
+    }
+  }
+}
