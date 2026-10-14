@@ -1,0 +1,320 @@
+{
+  "method": "Same P1.1 lexical role heuristic evaluated on both saved contexts; NOT independently annotated completeness. Cross-reference hints computed on P1.1 pool. No legal applicability proof.",
+  "observations": [
+    {
+      "issue": "ISSUE_001",
+      "p1_sec": 0.5447378000098979,
+      "p11_sec": 0.9656269999977667,
+      "p1_context_chunks": 5,
+      "p11_context_chunks": 5,
+      "p1_context_characters": 6261,
+      "p11_context_characters": 6393,
+      "aspect_count": 2,
+      "p1_covered_same_heuristic": 2,
+      "p11_covered": 2.0,
+      "uncovered": [],
+      "p1_coverage": {
+        "площадь этажа": true,
+        "эвакуационный выход": true
+      },
+      "p11_coverage": {
+        "площадь этажа": 1.0,
+        "эвакуационный выход": 1.0
+      },
+      "p1_context": [
+        "SP_1_13130_2020.pdf:p18:c80",
+        "SP_1_13130_2020.pdf:p7:c23",
+        "SP_1_13130_2020.pdf:p7:c24",
+        "SP_54_13330_2022.pdf:p61:c171",
+        "SP_1_13130_2020.pdf:p20:c90"
+      ],
+      "p11_context": [
+        "SP_1_13130_2020.pdf:p18:c80",
+        "SP_1_13130_2020.pdf:p7:c23",
+        "SP_1_13130_2020.pdf:p7:c24",
+        "SP_1_13130_2020.pdf:p20:c90",
+        "SP_1_13130_2020.pdf:p28:c119"
+      ]
+    },
+    {
+      "issue": "ISSUE_002",
+      "p1_sec": 0.5048289999976987,
+      "p11_sec": 0.7135222999932012,
+      "p1_context_chunks": 5,
+      "p11_context_chunks": 5,
+      "p1_context_characters": 6872,
+      "p11_context_characters": 7233,
+      "aspect_count": 2,
+      "p1_covered_same_heuristic": 2,
+      "p11_covered": 2.0,
+      "uncovered": [],
+      "p1_coverage": {
+        "ширина лестничного марша": true,
+        "ширина эвакуация": true
+      },
+      "p11_coverage": {
+        "ширина лестничного марша": 1.0,
+        "ширина эвакуация": 1.0
+      },
+      "p1_context": [
+        "SP_1_13130_2020.pdf:p20:c91",
+        "SP_54_13330_2022.pdf:p34:c95",
+        "SP_1_13130_2020.pdf:p22:c96",
+        "SP_1_13130_2020.pdf:p38:c156",
+        "FZ_384_2009.pdf:p23:c71"
+      ],
+      "p11_context": [
+        "SP_1_13130_2020.pdf:p36:c152",
+        "SP_1_13130_2020.pdf:p20:c91",
+        "SP_1_13130_2020.pdf:p38:c156",
+        "SP_1_13130_2020.pdf:p22:c96",
+        "SP_54_13330_2022.pdf:p34:c95"
+      ]
+    },
+    {
+      "issue": "ISSUE_003",
+      "p1_sec": 0.49344429999473505,
+      "p11_sec": 0.8267041000071913,
+      "p1_context_chunks": 5,
+      "p11_context_chunks": 5,
+      "p1_context_characters": 6380,
+      "p11_context_characters": 7013,
+      "aspect_count": 3,
+      "p1_covered_same_heuristic": 3,
+      "p11_covered": 3.0,
+      "uncovered": [],
+      "p1_coverage": {
+        "ширина пути эвакуации": true,
+        "ширина коридор": true,
+        "кладовые": true
+      },
+      "p11_coverage": {
+        "ширина пути эвакуации": 1.0,
+        "ширина коридор": 1.0,
+        "кладовые": 1.0
+      },
+      "p1_context": [
+        "SP_54_13330_2022.pdf:p30:c83",
+        "SP_54_13330_2022.pdf:p24:c63",
+        "SP_1_13130_2020.pdf:p30:c129",
+        "SP_54_13330_2022.pdf:p30:c84",
+        "SP_1_13130_2020.pdf:p11:c45"
+      ],
+      "p11_context": [
+        "SP_1_13130_2020.pdf:p30:c129",
+        "SP_1_13130_2020.pdf:p23:c100",
+        "SP_54_13330_2022.pdf:p30:c83",
+        "SP_54_13330_2022.pdf:p30:c84",
+        "SP_1_13130_2020.pdf:p36:c152"
+      ]
+    },
+    {
+      "issue": "ISSUE_004",
+      "p1_sec": 0.4066298999969149,
+      "p11_sec": 0.6493993999902159,
+      "p1_context_chunks": 5,
+      "p11_context_chunks": 5,
+      "p1_context_characters": 6550,
+      "p11_context_characters": 7168,
+      "aspect_count": 2,
+      "p1_covered_same_heuristic": 0,
+      "p11_covered": 1.0,
+      "uncovered": [
+        "высота дверного проема"
+      ],
+      "p1_coverage": {
+        "высота дверного проема": false,
+        "высота эвакуационный выход": false
+      },
+      "p11_coverage": {
+        "высота дверного проема": 0.0,
+        "высота эвакуационный выход": 1.0
+      },
+      "p1_context": [
+        "SP_1_13130_2020.pdf:p18:c80",
+        "SP_1_13130_2020.pdf:p7:c24",
+        "SP_1_13130_2020.pdf:p7:c23",
+        "SP_59_13330_2020.pdf:p33:c68",
+        "SP_1_13130_2020.pdf:p21:c94"
+      ],
+      "p11_context": [
+        "SP_1_13130_2020.pdf:p9:c36",
+        "SP_1_13130_2020.pdf:p37:c154",
+        "SP_1_13130_2020.pdf:p13:c56",
+        "SP_1_13130_2020.pdf:p39:c161",
+        "SP_59_13330_2020.pdf:p33:c68"
+      ]
+    },
+    {
+      "issue": "ISSUE_005",
+      "p1_sec": 0.4822645999956876,
+      "p11_sec": 0.9276902000128757,
+      "p1_context_chunks": 5,
+      "p11_context_chunks": 5,
+      "p1_context_characters": 6576,
+      "p11_context_characters": 6262,
+      "aspect_count": 5,
+      "p1_covered_same_heuristic": 2,
+      "p11_covered": 4.0,
+      "uncovered": [
+        "санузел"
+      ],
+      "p1_coverage": {
+        "объединение вентиляционных каналов": true,
+        "естественная вентиляция": false,
+        "кухня": true,
+        "санузел": false,
+        "В квартирах предусмотрена естественная вентиляция, кухня и санузлов": false
+      },
+      "p11_coverage": {
+        "объединение вентиляционных каналов": 1.0,
+        "естественная вентиляция": 1.0,
+        "кухня": 1.0,
+        "санузел": 0.0,
+        "В квартирах предусмотрена естественная вентиляция, кухня и санузлов": 1.0
+      },
+      "p1_context": [
+        "SP_54_13330_2022.pdf:p48:c141",
+        "SP_60_13330_2020.pdf:p37:c87",
+        "SP_60_13330_2020.pdf:p77:c200",
+        "SP_60_13330_2020.pdf:p77:c199",
+        "SP_60_13330_2020.pdf:p75:c193"
+      ],
+      "p11_context": [
+        "SP_54_13330_2022.pdf:p48:c141",
+        "SP_54_13330_2022.pdf:p47:c138",
+        "SP_60_13330_2020.pdf:p37:c87",
+        "SP_60_13330_2020.pdf:p77:c199",
+        "SP_60_13330_2020.pdf:p77:c200"
+      ]
+    },
+    {
+      "issue": "ISSUE_006",
+      "p1_sec": 0.4553658000077121,
+      "p11_sec": 0.8213812000030885,
+      "p1_context_chunks": 5,
+      "p11_context_chunks": 5,
+      "p1_context_characters": 6759,
+      "p11_context_characters": 6643,
+      "aspect_count": 4,
+      "p1_covered_same_heuristic": 0,
+      "p11_covered": 4.0,
+      "uncovered": [],
+      "p1_coverage": {
+        "уклону пандус": false,
+        "ширине пандус": false,
+        "подъемная платформа": false,
+        "доступность входа": false
+      },
+      "p11_coverage": {
+        "уклону пандус": 1.0,
+        "ширине пандус": 1.0,
+        "подъемная платформа": 1.0,
+        "доступность входа": 1.0
+      },
+      "p1_context": [
+        "SP_59_13330_2020.pdf:p35:c75",
+        "FZ_384_2009.pdf:p23:c71",
+        "SP_54_13330_2022.pdf:p49:c143",
+        "SP_59_13330_2020.pdf:p72:c152",
+        "SP_54_13330_2022.pdf:p34:c95"
+      ],
+      "p11_context": [
+        "SP_59_13330_2020.pdf:p22:c44",
+        "SP_59_13330_2020.pdf:p21:c43",
+        "SP_59_13330_2020.pdf:p29:c59",
+        "SP_59_13330_2020.pdf:p29:c60",
+        "SP_59_13330_2020.pdf:p25:c50"
+      ]
+    },
+    {
+      "issue": "ISSUE_007",
+      "p1_sec": 0.47455230000196025,
+      "p11_sec": 1.0525269000063417,
+      "p1_context_chunks": 5,
+      "p11_context_chunks": 5,
+      "p1_context_characters": 6835,
+      "p11_context_characters": 6839,
+      "aspect_count": 6,
+      "p1_covered_same_heuristic": 3,
+      "p11_covered": 3.0,
+      "uncovered": [
+        "шумоизоляция",
+        "уровень шума день",
+        "уровень шума ночь"
+      ],
+      "p1_coverage": {
+        "уровень шума": true,
+        "уровню жилое помещение": true,
+        "шумоизоляция": false,
+        "лифтовая шахта": true,
+        "уровень шума день": false,
+        "уровень шума ночь": false
+      },
+      "p11_coverage": {
+        "уровень шума": 1.0,
+        "уровню жилое помещение": 1.0,
+        "шумоизоляция": 0.0,
+        "лифтовая шахта": 1.0,
+        "уровень шума день": 0.0,
+        "уровень шума ночь": 0.0
+      },
+      "p1_context": [
+        "SP_54_13330_2022.pdf:p42:c122",
+        "SP_54_13330_2022.pdf:p38:c110",
+        "FZ_384_2009.pdf:p11:c33",
+        "SP_54_13330_2022.pdf:p21:c54",
+        "SP_54_13330_2022.pdf:p21:c55"
+      ],
+      "p11_context": [
+        "SP_54_13330_2022.pdf:p42:c122",
+        "SP_54_13330_2022.pdf:p38:c110",
+        "SP_54_13330_2022.pdf:p21:c54",
+        "FZ_384_2009.pdf:p11:c33",
+        "SP_54_13330_2022.pdf:p14:c34"
+      ]
+    },
+    {
+      "issue": "ISSUE_008",
+      "p1_sec": 0.3833044999919366,
+      "p11_sec": 0.7105508000095142,
+      "p1_context_chunks": 5,
+      "p11_context_chunks": 5,
+      "p1_context_characters": 6358,
+      "p11_context_characters": 5691,
+      "aspect_count": 3,
+      "p1_covered_same_heuristic": 2,
+      "p11_covered": 2.0,
+      "uncovered": [
+        "отключение электричества"
+      ],
+      "p1_coverage": {
+        "аварийное освещение": true,
+        "пути эвакуации": true,
+        "отключение электричества": false
+      },
+      "p11_coverage": {
+        "аварийное освещение": 1.0,
+        "пути эвакуации": 1.0,
+        "отключение электричества": 0.0
+      },
+      "p1_context": [
+        "SP_1_13130_2020.pdf:p12:c51",
+        "SP_1_13130_2020.pdf:p13:c58",
+        "SP_1_13130_2020.pdf:p12:c50",
+        "SP_52_13330_2016.pdf:p56:c165",
+        "SP_52_13330_2016.pdf:p57:c166"
+      ],
+      "p11_context": [
+        "SP_52_13330_2016.pdf:p56:c165",
+        "SP_1_13130_2020.pdf:p12:c53",
+        "SP_52_13330_2016.pdf:p58:c170",
+        "SP_52_13330_2016.pdf:p60:c173",
+        "SP_1_13130_2020.pdf:p12:c52"
+      ]
+    }
+  ],
+  "total_aspects": 27,
+  "p1_covered": 14,
+  "p11_covered": 21.0
+}

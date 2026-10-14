@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Sequence
 from decimal import Decimal
+from dataclasses import replace
 from time import perf_counter
 from typing import Protocol
 
@@ -22,10 +23,24 @@ from llm.prompts import (
     build_user_prompt,
 )
 from rag.models import SearchResult
-from rag.reranker import rerank_candidates
+from rag.reranker import rerank_candidates, chunk_kind, duplicate, VERSION
+from rag.query import prepare_queries, tokens
+from rag.context import chunk_key, related_chunks
+from rag.selection import aspects, classify, mandatory_link, explicit_location, INTERNAL_POOL, VERSION as SELECTION_VERSION
+from llm.evidence import parse_evidence, legacy_assessment, render_evidence
 
 
-_SOURCE_CITATION = re.compile(r"\[\s*(SOURCE_\d+)\s*\]")
+_SOURCE_CITATION = re.compile(r"\[\s*(SOURCE_\d+(?:\s*,\s*SOURCE_\d+)*)\s*\]")
+
+
+def _citation_ids(answer: str) -> list[str]:
+    remaining = _SOURCE_CITATION.sub("", answer)
+    if re.search(r"SOURCE_\w+", remaining):
+        raise CitationValidationError("Некорректный формат ссылки: используйте [SOURCE_N] или [SOURCE_1, SOURCE_3]")
+    return list(dict.fromkeys(sid for group in _SOURCE_CITATION.findall(answer)
+                              for sid in re.findall(r"SOURCE_\d+", group)))
+
+
 _MEASURED_VALUE = re.compile(
     r"(?<![\w.,])(?P<value>\d+(?:[.,]\d+)?)\s*"
     r"(?P<unit>м²|м2|кв\.\s*м|квадратн(?:ый|ых|ого)\s+метр(?:а|ов)?|"
@@ -54,6 +69,7 @@ class QuestionAnsweringService:
         self.retriever = retriever
         self.llm_client = llm_client
         self.config = config
+        self._retrieval_trace: dict = {}
 
     def answer(
         self,
@@ -98,6 +114,7 @@ class QuestionAnsweringService:
                 temperature=self.config.temperature,
                 insufficient_context=True,
                 partial_context=False,
+                retrieval_trace=prepared.retrieval_trace,
                 timings=QATimings(
                     retrieval_seconds=retrieval_seconds,
                     llm_seconds=0.0,
@@ -124,9 +141,13 @@ class QuestionAnsweringService:
                     raise EmptyResponseError("LLM returned an empty answer")
                 cited_sources, insufficient, partial = _validate_completion(
                     completion.content,
-                    validation_input,
+                    clean_question,
                     context_sources,
                 )
+                assessment = parse_evidence(completion.content, clean_question, context_sources)
+                if assessment is None:
+                    assessment = legacy_assessment(cited_sources, insufficient=insufficient)
+                partial = partial or assessment.conclusion == "requires_clarification"
                 break
             except ContextValidationError:
                 # A second generation cannot supply a missing normative value.
@@ -141,13 +162,14 @@ class QuestionAnsweringService:
                     user_prompt
                     + "\n\nКРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ОТВЕТА:\n"
                     + str(exc)
-                    + "\nПерепиши ответ, используя только явно подтвержденные "
-                    "утверждения и числа. Для каждого утверждения укажи [SOURCE_N]. "
-                    "Если подтверждена только часть составного вопроса, используй "
-                    "предписанную формулировку о частичной информации."
+                    + "\nВерни JSON по схеме из system prompt. Исправь идентификаторы "
+                    "источников, дословные выдержки и ссылки comparisons на их основания. "
+                    "Не подставляй проектные значения вместо нормативных. "
+                    "Для неизвестных условий используй unknowns и requires_clarification. "
+                    "Не заменяй JSON свободным текстом."
                 )
 
-        answer_text = completion.content
+        answer_text = render_evidence(assessment, cited_sources)
         if partial and PARTIAL_CONTEXT_MARKER.casefold() not in answer_text.casefold():
             answer_text = answer_text.rstrip() + "\n\n" + PARTIAL_CONTEXT_MARKER
 
@@ -172,6 +194,8 @@ class QuestionAnsweringService:
             prompt_tokens=_sum_tokens(completions, "prompt_tokens"),
             completion_tokens=_sum_tokens(completions, "completion_tokens"),
             total_tokens=_sum_tokens(completions, "total_tokens"),
+            validation=assessment.to_dict(),
+            retrieval_trace=prepared.retrieval_trace,
         )
 
     def prepare(
@@ -184,11 +208,14 @@ class QuestionAnsweringService:
         terms = [term.strip() for term in search_terms if isinstance(term, str) and term.strip()]
         started = perf_counter()
         evidence = self._retrieve_candidates(clean_question, terms)
-        relevant = [source for source in evidence if source.score >= self.config.min_relevance_score]
-        context_sources = self._fit_context(relevant[:self.config.top_k], clean_question)
+        selection_started=perf_counter()
+        context_sources = self._fit_context(evidence, clean_question, terms)
+        self._retrieval_trace['context_selection_seconds']=perf_counter()-selection_started
+        self._retrieval_trace['final_source_ids'] = [s.source_id for s in context_sources]
+        self._retrieval_trace['context_characters'] = len(build_user_prompt(clean_question,context_sources))
         return PreparedQuestion(
             clean_question, " ".join([clean_question, *terms]), evidence,
-            context_sources, perf_counter() - started,
+            context_sources, perf_counter() - started, self._retrieval_trace,
         )
 
     def _retrieve_candidates(
@@ -196,32 +223,78 @@ class QuestionAnsweringService:
         question: str,
         search_terms: Sequence[str],
     ) -> list[SourceEvidence]:
-        terms = list(
-            dict.fromkeys(
-                term.strip()
-                for term in search_terms
-                if isinstance(term, str) and term.strip()
-            )
-        )
+        plan = prepare_queries(question,search_terms)
+        terms = list(plan.terms)
         queries = _compose_retrieval_queries(question, terms)
         unique: dict[tuple[object, ...], SearchResult] = {}
+        origins: dict[tuple,list[dict]] = {}
+        pool_depth = max(self.config.candidate_k, INTERNAL_POOL)
+        self._retrieval_trace = {'version':VERSION,'selection_version':SELECTION_VERSION,
+            'queries':queries,'clean_terms':terms,'records':[],'related_limit':2,
+            'initial_depth':self.config.candidate_k,'internal_pool_depth':pool_depth}
+        search_started = perf_counter()
         for query in queries:
             # A specific object phrase may be less semantically similar than a
             # broad regulatory formulation and therefore sit below the first
             # ten hits. Keep the configured candidate depth for every query;
             # the union is deduplicated and reduced by the lightweight
             # reranker before anything is sent to the LLM.
-            for result in self.retriever.retrieve(query, self.config.candidate_k):
+            search = getattr(self.retriever,'retrieve_candidates',self.retriever.retrieve)
+            for position,result in enumerate(search(query,self.config.candidate_k),1):
                 key = _result_key(result)
+                origins.setdefault(key,[]).append({'query':query,'method':result.metadata.get('_retrieval_method','semantic'),
+                    'initial_position':result.metadata.get('_initial_rank',position),'semantic_score':result.score,
+                    'distance':result.distance,'lexical_score':result.metadata.get('_lexical_score')})
                 existing = unique.get(key)
                 if existing is None or result.score > existing.score:
-                    unique[key] = result
+                    unique[key] = SearchResult(result.distance,result.text,{**result.metadata,'_retrieval_query':query})
+        self._retrieval_trace['search_seconds'] = perf_counter()-search_started
+        for key,result in list(unique.items()):
+            unique[key] = SearchResult(result.distance,result.text,{**result.metadata,'_provenance':origins[key]})
+        rank_started=perf_counter()
         ranked = rerank_candidates(
             question,
             terms,
             list(unique.values()),
-            top_k=self.config.candidate_k,
+            top_k=max(1,len(unique)),
         )
+        self._retrieval_trace['reranking_seconds']=perf_counter()-rank_started
+        kept=ranked[:pool_depth]
+        for rank,item in enumerate(ranked,1):
+            self._retrieval_trace['records'].append({'chunk_id':chunk_key(item.result),'rerank_position':rank,
+                'semantic_score':item.result.score,'rerank_score':item.rerank_score,'signals':item.signals,
+                'hits':origins[_result_key(item.result)],'source_id':f'SOURCE_{rank}' if rank<=len(kept) else None,
+                'decision':'candidate' if rank<=len(kept) else 'candidate_limit'})
+        # Two exact existing chunks maximum. No recursive graph walk, no new
+        # retrieval request, no mixing adjacent pages across documents.
+        related_started=perf_counter()
+        related = getattr(self.retriever,'related',None)
+        if related is not None:
+            extras=[]
+            keys={_result_key(item.result) for item in kept}
+            for item in kept[:self.config.top_k]:
+                if item.result.score<self.config.min_relevance_score or chunk_kind(item.result.text) in {'contents','publication','references','title'}: continue
+                for result in related(item.result,limit=2-len(extras)):
+                    if _result_key(result) in keys: continue
+                    keys.add(_result_key(result))
+                    result=SearchResult(result.distance,result.text,{**result.metadata,'_provenance':[{
+                        'query':item.result.metadata.get('_retrieval_query'), 'method':'related',
+                        'initial_position':None,'semantic_score':None if result.metadata.get('_score_inherited') else result.score,
+                        'parent_chunk_id':chunk_key(item.result),'reference':result.metadata.get('_reference')}]})
+                    extras.append(result)
+                    if len(extras)>=2: break
+                if len(extras)>=2: break
+            for result in extras:
+                score = rerank_candidates(question,terms,[result],top_k=1)[0]
+                kept.append(score)
+                self._retrieval_trace['records'].append({'chunk_id':chunk_key(result),'rerank_position':None,
+                    'semantic_score':None if result.metadata.get('_score_inherited') else result.score,
+                    'rerank_score':score.rerank_score,'signals':score.signals,'hits':[{'method':'related',
+                    'query':result.metadata.get('_provenance',[{}])[0].get('query'),'initial_position':None,
+                    'parent_chunk_id':result.metadata.get('_related_to'),'reference':result.metadata.get('_reference'),
+                    'reference_kind':result.metadata.get('_reference_kind')}],
+                    'source_id':f'SOURCE_{len(kept)}','decision':'candidate'})
+        self._retrieval_trace['related_seconds']=perf_counter()-related_started
         return [
             SourceEvidence.from_search_result(
                 index,
@@ -229,21 +302,121 @@ class QuestionAnsweringService:
                 rerank_score=item.rerank_score,
                 matched_terms=list(item.matched_terms),
             )
-            for index, item in enumerate(ranked, start=1)
+            for index, item in enumerate(kept, start=1)
         ]
     def _fit_context(
         self,
         sources: Sequence[SourceEvidence],
         question: str,
+        search_terms: Sequence[str] = (),
     ) -> list[SourceEvidence]:
         selected: list[SourceEvidence] = []
-        for source in sources:
-            candidate = [*selected, source]
-            size = len(build_user_prompt(question, candidate))
-            if size <= self.config.max_context_chars:
-                selected.append(source)
-            else:
-                break
+        requested=aspects(question,search_terms)
+        # Existing ordinary candidates may themselves be referenced conditions;
+        # do not lose their dependency just because retrieval deduplicated them.
+        result_rows=[SearchResult(s.distance,s.text,{'source_file':s.chunk_id.split(':p')[0],
+                     'page':s.page,'chunk_index':i}) for i,s in enumerate(sources)]
+        local_rows={chunk_key(r):s for r,s in zip(result_rows,sources)}
+        by_chunk={s.chunk_id:s for s in sources}
+        links=[]
+        hints={}
+        for parent,row in zip(sources,result_rows):
+            for child in related_chunks(row,result_rows,limit=6):
+                target=local_rows[chunk_key(child)]
+                linked=replace(target,provenance=[{'method':'related','reference':child.metadata['_reference']}])
+                links.append((parent,target,mandatory_link(parent,linked,requested)))
+                location=explicit_location(parent.text)
+                if location:
+                    hints[target.source_id]={'location':location,'parent_source_id':parent.source_id,
+                                             'reference':child.metadata['_reference']}
+        roles={s.source_id:classify(s,requested,location_hint=hints.get(s.source_id,{}).get('location')) for s in sources}
+        covered: set[str] = set()
+        duplicate_pairs=set()
+        for index,first in enumerate(sources):
+            for second in sources[index+1:]:
+                if duplicate(SearchResult(first.distance,first.text,{}),SearchResult(second.distance,second.text,{})):
+                    duplicate_pairs.add(frozenset((first.chunk_id,second.chunk_id)))
+        records={r['source_id']:r for r in self._retrieval_trace.get('records',[]) if r['source_id']}
+        for sid,role in roles.items():
+            if sid in hints: role['scope_hint']=hints[sid]
+            if sid in records: records[sid]['selection']=role
+        mandatory={s.source_id for s in sources if s.related_to in by_chunk
+                   and mandatory_link(by_chunk[s.related_to],s,requested)}
+        dependencies={s.source_id:[c.source_id for c in sources if c.related_to==s.chunk_id
+                                  and c.source_id in mandatory] for s in sources}
+        for parent,child,required in links:
+            if required and len(dependencies[parent.source_id])<2 and child.source_id not in dependencies[parent.source_id]:
+                dependencies[parent.source_id].append(child.source_id)
+        # If an otherwise unqualified clause was selected using a spatial
+        # cross-reference, retain that reference as provenance in context.
+        for sid,hint in hints.items():
+            parent_id=hint['parent_source_id']
+            if (any(a.location==hint['location'] for a in requested) and roles[sid]['direct_aspects']
+                    and explicit_location(next(s.text for s in sources if s.source_id==sid)) != hint['location']
+                    and parent_id not in dependencies[sid]): dependencies[sid].append(parent_id)
+        self._retrieval_trace['candidate_links']=[{'parent':p.source_id,'child':c.source_id,'mandatory_signal':required} for p,c,required in links]
+        pending=list(sources)
+        while pending and len(selected)<self.config.top_k:
+            eligible=[]
+            selected_ids={s.source_id for s in selected}
+            needed={sid for parent in selected for sid in dependencies[parent.source_id] if sid not in selected_ids}
+            reserve_due=bool(needed) and self.config.top_k-len(selected)<=len(needed)
+            for source in pending:
+                reason = None
+                linked_parent=next((old for old in selected if old.chunk_id==source.related_to),None)
+                if source.related_to and linked_parent is None: reason='awaiting_parent'
+                elif source.score<self.config.min_relevance_score and not linked_parent: reason='below_min_score'
+                elif chunk_kind(source.text) in {'publication','contents','references','title'}: reason='service_fragment'
+                elif any(frozenset((source.chunk_id,old.chunk_id)) in duplicate_pairs for old in selected): reason='duplicate'
+                elif len(build_user_prompt(question,[*selected,source]))>self.config.max_context_chars: reason='context_budget'
+                else:
+                    required_ids=set(dependencies[source.source_id])-selected_ids-{source.source_id}
+                    required_rows=[s for s in sources if s.source_id in required_ids]
+                    if source.source_id not in needed:
+                        if len(selected)+1+len(required_rows)>self.config.top_k:
+                            reason='dependency_slots'
+                        elif len(build_user_prompt(question,[*selected,source,*required_rows]))>self.config.max_context_chars:
+                            reason='dependency_budget'
+                if reason:
+                    if source.source_id in records: records[source.source_id]['decision']=reason
+                    continue
+                role=roles[source.source_id]
+                new=set(role['direct_aspects'])-covered
+                # Required dependencies have reserved remaining slots. Other
+                # linked explanations never displace independent requirements.
+                priority=(4 if reserve_due and source.source_id in needed else
+                          3 if new else 2 if source.source_id in needed else
+                          1 if role['direct_aspects'] else 0)
+                relevance=source.rerank_score or 0.
+                weights={a.label:1/(1+i*.15) for i,a in enumerate(requested)}
+                gain=sum(weights[a] for a in new)/sum(weights.values()) if weights else 0.
+                quality=max(role['matches'].values(),default=0.)
+                utility=relevance+.40*gain+.20*quality
+                eligible.append(((priority,utility),source))
+            if not eligible: break
+            _,best=max(eligible,key=lambda row:row[0])
+            selected.append(best); pending.remove(best)
+            if best.source_id in records:
+                records[best.source_id]['decision']='included_related' if best.related_to else 'included_relevance_coverage'
+                if best.source_id in mandatory:
+                    records[best.source_id]['selection']['role']='mandatory_condition'
+                records[best.source_id]['required_by']=[s.source_id for s in selected
+                    if best.source_id in dependencies[s.source_id]]
+                if best.source_id in needed and not roles[best.source_id]['direct_aspects']:
+                    records[best.source_id]['selection']['role']='mandatory_condition'
+            covered.update(roles[best.source_id]['direct_aspects'])
+        for source in pending:
+            if source.source_id in records:
+                if records[source.source_id]['decision']=='candidate': records[source.source_id]['decision']='context_top_k'
+                elif records[source.source_id]['decision']=='awaiting_parent': records[source.source_id]['decision']='parent_not_selected'
+        selected_ids={s.source_id for s in selected}
+        missing_dependencies=[{'parent':s.source_id,'missing_source_ids':[sid for sid in dependencies[s.source_id] if sid not in selected_ids]}
+                              for s in selected if any(sid not in selected_ids for sid in dependencies[s.source_id])]
+        self._retrieval_trace['aspect_coverage']={a.label:float(a.label in covered) for a in requested}
+        self._retrieval_trace['uncovered_aspects']=[a.label for a in requested if a.label not in covered]
+        self._retrieval_trace['missing_dependencies']=missing_dependencies
+        self._retrieval_trace['coverage_method']='co-occurring object/parameter and modal lexical signals; not legal or semantic verification'
+        self._retrieval_trace['completeness_verified']=False
         return selected
 
 
@@ -251,23 +424,9 @@ def _compose_retrieval_queries(
     question: str,
     search_terms: Sequence[str],
 ) -> list[str]:
-    """Build bounded object+parameter expansions for first-stage retrieval.
+    """Prepare a bounded, cleaned object/parameter query plan."""
 
-    Normative wording often contains a specific object in one user phrase and
-    the checked parameter in another. Pairing the two longest (usually most
-    descriptive) terms with the remaining terms gives semantic retrieval that
-    combined signal without introducing domain-specific synonyms or rules.
-    """
-
-    base = list(dict.fromkeys([question, *search_terms]))
-    anchors = sorted(search_terms, key=len, reverse=True)[:2]
-    expansions = [
-        f"{anchor} {term}"
-        for anchor in anchors
-        for term in search_terms
-        if anchor != term
-    ][:8]
-    return list(dict.fromkeys([*base, *expansions]))
+    return list(prepare_queries(question,search_terms).queries)
 
 
 def _resolve_citations(
@@ -275,7 +434,7 @@ def _resolve_citations(
     available_sources: Sequence[SourceEvidence],
 ) -> list[SourceEvidence]:
     source_map = {source.source_id: source for source in available_sources}
-    ordered_ids = dict.fromkeys(_SOURCE_CITATION.findall(answer))
+    ordered_ids = _citation_ids(answer)
     invalid_ids = [source_id for source_id in ordered_ids if source_id not in source_map]
     if invalid_ids:
         raise CitationValidationError(
@@ -299,6 +458,30 @@ def _validate_measured_values(
     cited_sources: Sequence[SourceEvidence],
     context_sources: Sequence[SourceEvidence],
 ) -> None:
+    # Bind each citation-bearing span to its own sources. Adjacent citations
+    # form one group. This is syntactic provenance, not semantic entailment.
+    matches = list(_SOURCE_CITATION.finditer(answer))
+    if matches:
+        _resolve_citations(answer, context_sources)
+        source_map = {source.source_id: source for source in cited_sources}
+        cursor = 0
+        index = 0
+        while index < len(matches):
+            match = matches[index]
+            end = match.end()
+            ids = re.findall(r"SOURCE_\d+", match.group())
+            while index + 1 < len(matches) and re.fullmatch(r"[\s,;]*", answer[end:matches[index + 1].start()]):
+                index += 1
+                end = matches[index].end()
+                ids.extend(re.findall(r"SOURCE_\d+", matches[index].group()))
+            local_sources = [source_map[sid] for sid in dict.fromkeys(ids) if sid in source_map]
+            _validate_measured_values(answer[cursor:match.start()], question, local_sources, context_sources)
+            cursor = end
+            index += 1
+        # An uncited tail may repeat a project value, but cannot borrow a
+        # normative value from an earlier citation somewhere in the answer.
+        _validate_measured_values(answer[cursor:], question, [], context_sources)
+        return
     without_citations = _SOURCE_CITATION.sub("", answer)
     claimed = _measurements(without_citations)
     if not claimed:
@@ -306,6 +489,12 @@ def _validate_measured_values(
     # Normalize each evidence text independently: joining unrelated chunks may
     # accidentally combine a trailing number with the next chunk's unit.
     allowed = _measurements(question)
+    # A project value is not evidence for a normative minimum. This is a
+    # conservative lexical rejection only, never a semantic acceptance rule.
+    for match in _MEASURED_VALUE.finditer(answer):
+        prefix = answer[max(0, match.start() - 70):match.start()]
+        if re.search(r"(?:миним\w*|максим\w*|требуем\w*|норматив\w*|допустим\w*|не менее|не более)\s*(?:составляет|равен|равна|:)?\s*$", prefix, re.I):
+            allowed.difference_update(_measurements(match.group()))
     for source in cited_sources:
         allowed.update(_measurements(source.text))
     invented = sorted(claimed - allowed)
@@ -341,6 +530,13 @@ def _validate_completion(
     question: str,
     context_sources: Sequence[SourceEvidence],
 ) -> tuple[list[SourceEvidence], bool, bool]:
+    assessment = parse_evidence(answer, question, context_sources)
+    if assessment is not None:
+        ids = list(dict.fromkeys(r["source_id"] for r in assessment.requirements))
+        by_id = {s.source_id: s for s in context_sources}
+        return ([by_id[sid] for sid in ids],
+                assessment.conclusion == "insufficient_information",
+                assessment.conclusion == "requires_clarification")
     cited_sources = _resolve_citations(answer, context_sources)
     folded = answer.casefold()
     has_insufficient_phrase = INSUFFICIENT_CONTEXT_ANSWER.casefold() in folded
@@ -356,7 +552,9 @@ def _validate_completion(
         cited_sources,
         context_sources,
     )
-    return cited_sources, insufficient, partial
+    # Free prose lacks a claim-level contract. Existing IDs and numbers alone
+    # cannot make it a fully validated compliance decision.
+    return cited_sources, insufficient, partial or (bool(cited_sources) and not insufficient)
 
 
 def _looks_partial(

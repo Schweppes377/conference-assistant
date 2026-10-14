@@ -1,0 +1,322 @@
+[
+  {
+    "issue": "ISSUE_001",
+    "source_id": "SOURCE_1",
+    "chunk_id": "SP_1_13130_2020.pdf:p18:c80",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_001",
+    "source_id": "SOURCE_41",
+    "chunk_id": "SP_1_13130_2020.pdf:p7:c23",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_001",
+    "source_id": "SOURCE_42",
+    "chunk_id": "SP_1_13130_2020.pdf:p7:c24",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_001",
+    "source_id": "SOURCE_3",
+    "chunk_id": "SP_1_13130_2020.pdf:p20:c90",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_001",
+    "source_id": "SOURCE_4",
+    "chunk_id": "SP_1_13130_2020.pdf:p28:c119",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9565667011375388
+  },
+  {
+    "issue": "ISSUE_002",
+    "source_id": "SOURCE_5",
+    "chunk_id": "SP_1_13130_2020.pdf:p36:c152",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.943254817987152
+  },
+  {
+    "issue": "ISSUE_002",
+    "source_id": "SOURCE_1",
+    "chunk_id": "SP_1_13130_2020.pdf:p20:c91",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9928425357873211
+  },
+  {
+    "issue": "ISSUE_002",
+    "source_id": "SOURCE_2",
+    "chunk_id": "SP_1_13130_2020.pdf:p38:c156",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.930715935334873
+  },
+  {
+    "issue": "ISSUE_002",
+    "source_id": "SOURCE_3",
+    "chunk_id": "SP_1_13130_2020.pdf:p22:c96",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_002",
+    "source_id": "SOURCE_4",
+    "chunk_id": "SP_54_13330_2022.pdf:p34:c95",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9624217118997912
+  },
+  {
+    "issue": "ISSUE_003",
+    "source_id": "SOURCE_3",
+    "chunk_id": "SP_1_13130_2020.pdf:p30:c129",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_003",
+    "source_id": "SOURCE_8",
+    "chunk_id": "SP_1_13130_2020.pdf:p23:c100",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9513513513513514
+  },
+  {
+    "issue": "ISSUE_003",
+    "source_id": "SOURCE_1",
+    "chunk_id": "SP_54_13330_2022.pdf:p30:c83",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_003",
+    "source_id": "SOURCE_2",
+    "chunk_id": "SP_54_13330_2022.pdf:p30:c84",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_003",
+    "source_id": "SOURCE_4",
+    "chunk_id": "SP_1_13130_2020.pdf:p36:c152",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.943254817987152
+  },
+  {
+    "issue": "ISSUE_004",
+    "source_id": "SOURCE_4",
+    "chunk_id": "SP_1_13130_2020.pdf:p9:c36",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_004",
+    "source_id": "SOURCE_6",
+    "chunk_id": "SP_1_13130_2020.pdf:p37:c154",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9229122055674518
+  },
+  {
+    "issue": "ISSUE_004",
+    "source_id": "SOURCE_11",
+    "chunk_id": "SP_1_13130_2020.pdf:p13:c56",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_004",
+    "source_id": "SOURCE_13",
+    "chunk_id": "SP_1_13130_2020.pdf:p39:c161",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_004",
+    "source_id": "SOURCE_2",
+    "chunk_id": "SP_59_13330_2020.pdf:p33:c68",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_005",
+    "source_id": "SOURCE_1",
+    "chunk_id": "SP_54_13330_2022.pdf:p48:c141",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9955947136563876
+  },
+  {
+    "issue": "ISSUE_005",
+    "source_id": "SOURCE_8",
+    "chunk_id": "SP_54_13330_2022.pdf:p47:c138",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9974126778783958
+  },
+  {
+    "issue": "ISSUE_005",
+    "source_id": "SOURCE_2",
+    "chunk_id": "SP_60_13330_2020.pdf:p37:c87",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9979736575481256
+  },
+  {
+    "issue": "ISSUE_005",
+    "source_id": "SOURCE_37",
+    "chunk_id": "SP_60_13330_2020.pdf:p77:c199",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_005",
+    "source_id": "SOURCE_36",
+    "chunk_id": "SP_60_13330_2020.pdf:p77:c200",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_006",
+    "source_id": "SOURCE_27",
+    "chunk_id": "SP_59_13330_2020.pdf:p22:c44",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9702176403207331
+  },
+  {
+    "issue": "ISSUE_006",
+    "source_id": "SOURCE_8",
+    "chunk_id": "SP_59_13330_2020.pdf:p21:c43",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9967051070840197
+  },
+  {
+    "issue": "ISSUE_006",
+    "source_id": "SOURCE_17",
+    "chunk_id": "SP_59_13330_2020.pdf:p29:c59",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_006",
+    "source_id": "SOURCE_22",
+    "chunk_id": "SP_59_13330_2020.pdf:p29:c60",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.997275204359673
+  },
+  {
+    "issue": "ISSUE_006",
+    "source_id": "SOURCE_39",
+    "chunk_id": "SP_59_13330_2020.pdf:p25:c50",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_007",
+    "source_id": "SOURCE_1",
+    "chunk_id": "SP_54_13330_2022.pdf:p42:c122",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_007",
+    "source_id": "SOURCE_2",
+    "chunk_id": "SP_54_13330_2022.pdf:p38:c110",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9705128205128205
+  },
+  {
+    "issue": "ISSUE_007",
+    "source_id": "SOURCE_3",
+    "chunk_id": "SP_54_13330_2022.pdf:p21:c54",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_007",
+    "source_id": "SOURCE_5",
+    "chunk_id": "FZ_384_2009.pdf:p11:c33",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_007",
+    "source_id": "SOURCE_10",
+    "chunk_id": "SP_54_13330_2022.pdf:p14:c34",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_008",
+    "source_id": "SOURCE_2",
+    "chunk_id": "SP_52_13330_2016.pdf:p56:c165",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9574861367837338
+  },
+  {
+    "issue": "ISSUE_008",
+    "source_id": "SOURCE_3",
+    "chunk_id": "SP_1_13130_2020.pdf:p12:c53",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  },
+  {
+    "issue": "ISSUE_008",
+    "source_id": "SOURCE_4",
+    "chunk_id": "SP_52_13330_2016.pdf:p58:c170",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.9971181556195965
+  },
+  {
+    "issue": "ISSUE_008",
+    "source_id": "SOURCE_11",
+    "chunk_id": "SP_52_13330_2016.pdf:p60:c173",
+    "page_exists": true,
+    "normalized_text_found": false,
+    "ordered_character_coverage": 0.8805237315875614
+  },
+  {
+    "issue": "ISSUE_008",
+    "source_id": "SOURCE_5",
+    "chunk_id": "SP_1_13130_2020.pdf:p12:c52",
+    "page_exists": true,
+    "normalized_text_found": true,
+    "ordered_character_coverage": 1.0
+  }
+]

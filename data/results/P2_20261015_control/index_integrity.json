@@ -1,0 +1,237 @@
+{
+  "original": "C:\\Users\\maree\\PycharmProjects\\conference-assistant\\data\\chroma\\chroma.sqlite3",
+  "snapshot": "C:\\Users\\maree\\.codex\\.chatgpt-projects\\g-p-6aac4ce0dfa481918d8d3743aa7c1d1d\\p1_index_snapshot\\chroma.sqlite3",
+  "tables": {
+    "embedding_fulltext_search_config": {
+      "original": {
+        "rows": 1,
+        "sha256": "a8b2b0af8b6c9a9598f7099e99403f4c08ac9073e6ed401557fcc5c6bcbab6c1"
+      },
+      "snapshot": {
+        "rows": 1,
+        "sha256": "a8b2b0af8b6c9a9598f7099e99403f4c08ac9073e6ed401557fcc5c6bcbab6c1"
+      },
+      "identical": true
+    },
+    "segment_metadata": {
+      "original": {
+        "rows": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "snapshot": {
+        "rows": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "identical": true
+    },
+    "collections": {
+      "original": {
+        "rows": 1,
+        "sha256": "833630820e08bef0b579c400ce0bd769c5497b4e0b7f937b58c7de96f5a3957b"
+      },
+      "snapshot": {
+        "rows": 1,
+        "sha256": "833630820e08bef0b579c400ce0bd769c5497b4e0b7f937b58c7de96f5a3957b"
+      },
+      "identical": true
+    },
+    "embedding_fulltext_search_content": {
+      "original": {
+        "rows": 3787,
+        "sha256": "48324c911bbd62c07fed42e6b2049ab2f19233fe91c1230bc8ce81ae4708fcd7"
+      },
+      "snapshot": {
+        "rows": 3787,
+        "sha256": "48324c911bbd62c07fed42e6b2049ab2f19233fe91c1230bc8ce81ae4708fcd7"
+      },
+      "identical": true
+    },
+    "collection_metadata": {
+      "original": {
+        "rows": 2,
+        "sha256": "292b8bfafe65add57b4f8d74404f013b72c15ae98c27cfd85aed0801b258319b"
+      },
+      "snapshot": {
+        "rows": 2,
+        "sha256": "292b8bfafe65add57b4f8d74404f013b72c15ae98c27cfd85aed0801b258319b"
+      },
+      "identical": true
+    },
+    "databases": {
+      "original": {
+        "rows": 1,
+        "sha256": "27abe561832b66a83fc4b223d1c29eb7da54b2d1ff40e6417b4eddc13cc01894"
+      },
+      "snapshot": {
+        "rows": 1,
+        "sha256": "27abe561832b66a83fc4b223d1c29eb7da54b2d1ff40e6417b4eddc13cc01894"
+      },
+      "identical": true
+    },
+    "embeddings": {
+      "original": {
+        "rows": 3787,
+        "sha256": "8c04c50e2b72caf1cd803276cbcf16748ed27bd872c8c0a659312a6dc367b4bf"
+      },
+      "snapshot": {
+        "rows": 3787,
+        "sha256": "8c04c50e2b72caf1cd803276cbcf16748ed27bd872c8c0a659312a6dc367b4bf"
+      },
+      "identical": true
+    },
+    "max_seq_id": {
+      "original": {
+        "rows": 2,
+        "sha256": "be371631db85bf269f50950570a7913c56debd994a359c0d43ad3b90d5fe2d03"
+      },
+      "snapshot": {
+        "rows": 2,
+        "sha256": "be371631db85bf269f50950570a7913c56debd994a359c0d43ad3b90d5fe2d03"
+      },
+      "identical": true
+    },
+    "embedding_fulltext_search_docsize": {
+      "original": {
+        "rows": 3787,
+        "sha256": "f28d19c8ec96eae26d3d92bcbab16a44afebc1dbcbb00b67188b833143f58e66"
+      },
+      "snapshot": {
+        "rows": 3787,
+        "sha256": "f28d19c8ec96eae26d3d92bcbab16a44afebc1dbcbb00b67188b833143f58e66"
+      },
+      "identical": true
+    },
+    "embedding_metadata_array": {
+      "original": {
+        "rows": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "snapshot": {
+        "rows": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "identical": true
+    },
+    "migrations": {
+      "original": {
+        "rows": 18,
+        "sha256": "6c8c6d5489bb46864cf7ce6a703bf444a56a30141e0d4ea8132009ca098dc543"
+      },
+      "snapshot": {
+        "rows": 18,
+        "sha256": "6c8c6d5489bb46864cf7ce6a703bf444a56a30141e0d4ea8132009ca098dc543"
+      },
+      "identical": true
+    },
+    "embeddings_queue": {
+      "original": {
+        "rows": 1,
+        "sha256": "671f43a33b0165b73c7ef5c989df12108ed15282fb7ee50edb1e6edf09b555cf"
+      },
+      "snapshot": {
+        "rows": 1,
+        "sha256": "671f43a33b0165b73c7ef5c989df12108ed15282fb7ee50edb1e6edf09b555cf"
+      },
+      "identical": true
+    },
+    "acquire_write": {
+      "original": {
+        "rows": 76,
+        "sha256": "2ab8982ee52ac926f0daf3eb95ffffc4958e53d5afaf646d8fd859b9c66ed1ff"
+      },
+      "snapshot": {
+        "rows": 84,
+        "sha256": "51e6d36db78705c1942d36c8591ac534e7bac5725351ad3b559a6868ce875b94"
+      },
+      "identical": false
+    },
+    "tenants": {
+      "original": {
+        "rows": 1,
+        "sha256": "6471c5a366dba911d635a36ff8b0b13f99eaa61df24681be49badc42ce4f3241"
+      },
+      "snapshot": {
+        "rows": 1,
+        "sha256": "6471c5a366dba911d635a36ff8b0b13f99eaa61df24681be49badc42ce4f3241"
+      },
+      "identical": true
+    },
+    "embedding_fulltext_search_idx": {
+      "original": {
+        "rows": 5720,
+        "sha256": "7414b020cd4f93a318b67abb55465e484d6b4d4444cfeddf5b62f1817747debd"
+      },
+      "snapshot": {
+        "rows": 5720,
+        "sha256": "7414b020cd4f93a318b67abb55465e484d6b4d4444cfeddf5b62f1817747debd"
+      },
+      "identical": true
+    },
+    "embedding_metadata": {
+      "original": {
+        "rows": 22722,
+        "sha256": "33fff6f61620b1c60cbca0a29f91609201d95e7dc37383dd9b7b6c2ba911d732"
+      },
+      "snapshot": {
+        "rows": 22722,
+        "sha256": "33fff6f61620b1c60cbca0a29f91609201d95e7dc37383dd9b7b6c2ba911d732"
+      },
+      "identical": true
+    },
+    "embedding_fulltext_search_data": {
+      "original": {
+        "rows": 7101,
+        "sha256": "0975081112bd225cc7f8d0b6b72c8b2cb0c2c083a81a6e0a62e73a59455a8068"
+      },
+      "snapshot": {
+        "rows": 7101,
+        "sha256": "0975081112bd225cc7f8d0b6b72c8b2cb0c2c083a81a6e0a62e73a59455a8068"
+      },
+      "identical": true
+    },
+    "embeddings_queue_config": {
+      "original": {
+        "rows": 1,
+        "sha256": "95495b31f0535af5625deb1ff6945b384113a9d7ee231f2980ba5504a8f8c0fd"
+      },
+      "snapshot": {
+        "rows": 1,
+        "sha256": "95495b31f0535af5625deb1ff6945b384113a9d7ee231f2980ba5504a8f8c0fd"
+      },
+      "identical": true
+    },
+    "embedding_fulltext_search": {
+      "original": {
+        "rows": 3787,
+        "sha256": "a9ef48b39cd8d4469e859d8b0dbeb9452ed6763f627cad68c165ef29bb534f5f"
+      },
+      "snapshot": {
+        "rows": 3787,
+        "sha256": "a9ef48b39cd8d4469e859d8b0dbeb9452ed6763f627cad68c165ef29bb534f5f"
+      },
+      "identical": true
+    },
+    "segments": {
+      "original": {
+        "rows": 2,
+        "sha256": "6ed0262ad345b362a6b576fea00cf911ec25b4720d52f7a0b4fdb3f484d7c5c6"
+      },
+      "snapshot": {
+        "rows": 2,
+        "sha256": "6ed0262ad345b362a6b576fea00cf911ec25b4720d52f7a0b4fdb3f484d7c5c6"
+      },
+      "identical": true
+    },
+    "maintenance_log": {
+      "original": {
+        "rows": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "snapshot": {
+        "rows": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "identical": true
+    }
+  }
+}

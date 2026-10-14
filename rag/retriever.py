@@ -6,6 +6,9 @@ from rag.config import RAGConfig
 from rag.embeddings import SentenceTransformerEmbedder
 from rag.models import SearchResult
 from rag.store import VectorStore
+from rag.context import related_chunks
+from rag.context import chunk_key
+import numpy as np
 
 
 class IndexNotReadyError(RuntimeError):
@@ -19,6 +22,7 @@ class SemanticRetriever:
         self.config = config
         self._embedder: SentenceTransformerEmbedder | None = None
         self._store: VectorStore | None = None
+        self._query_vectors: dict[str, list[float]] = {}
 
     @property
     def device(self) -> str:
@@ -41,6 +45,31 @@ class SemanticRetriever:
             raise IndexNotReadyError("The index is empty. Run: python -m rag.index")
         query_embedding = self._get_embedder().encode_query(query)
         return store.search(query_embedding, top_k)
+
+    def retrieve_candidates(self, query: str, top_k: int) -> list[SearchResult]:
+        """Bounded semantic+lexical union, one existing-model embedding/query."""
+        if not query.strip() or top_k < 1:
+            raise ValueError('Нужен непустой запрос и положительный top_k')
+        store = self._get_store()
+        if store.count == 0:
+            raise IndexNotReadyError('The index is empty. Run: python -m rag.index')
+        vector = self._get_embedder().encode_query(query)
+        self._query_vectors[query] = vector
+        semantic = [SearchResult(r.distance,r.text,{**r.metadata,'_retrieval_method':'semantic','_initial_rank':rank})
+                    for rank,r in enumerate(store.search(vector,top_k),1)]
+        return semantic + store.lexical_search(query,vector,top_k)
+
+    def related(self, parent: SearchResult, *, limit: int = 2) -> list[SearchResult]:
+        """Follow bounded explicit same-document references in stored chunks."""
+        records,matrix,_,_ = self._get_store().corpus()
+        linked = related_chunks(parent,records,limit=limit)
+        vector = self._query_vectors.get(parent.metadata.get('_retrieval_query',''))
+        if vector is None: return linked
+        by_key={chunk_key(r): index for index,r in enumerate(records)}
+        q=np.asarray(vector,dtype=np.float32)
+        return [SearchResult(1.-float(np.dot(matrix[by_key[chunk_key(r)]],q) /
+               max(float(np.linalg.norm(matrix[by_key[chunk_key(r)]])*np.linalg.norm(q)),1e-12)),
+               r.text,{**r.metadata,'_score_inherited':False}) for r in linked]
 
     def _get_embedder(self) -> SentenceTransformerEmbedder:
         if self._embedder is None:

@@ -1,0 +1,18 @@
+{
+  "version": "p1.1-1",
+  "initial_depth": 20,
+  "internal_pool": 40,
+  "context_chunks": 5,
+  "max_context_chars": 12000,
+  "limitation": "development/regression on reused eight questions, not independent generalization",
+  "files": {
+    "llm/service.py": "f93716d02e4b99b73038c4eb96aee53fb9eecad7d9f4280c7f8d7436ca2abbaf",
+    "rag/selection.py": "14efd1c1cdc27f36e6441e6f45cd68e39a08d44affe12633c21c93d991aeedf8",
+    "rag/query.py": "c9c432972e2786b9ca787d93a2c89d4f1547f3d3f5158cef92a4b59bfaadc9b5",
+    "rag/reranker.py": "63a49211bd34e6419c11aba783562b7c1f5bd0fc711084bd451d1883b430863c",
+    "rag/retriever.py": "6a9e4ac7e4afb1df86bc7241c9706760f2a1c926237e06ec25f859e0c87638bb",
+    "rag/store.py": "047be9de85acdedc9d8b5214db686ca8fe1d62c9ec1920a167a91aef8824dc58",
+    "rag/context.py": "6c9f75b59cc7166d3f7141da54048a21188e24452eb50c7f2ae25d02e9ed173f",
+    "evaluation/p1_compare.py": "3602c9c53eb359cd572d6726a90e3e471ae0ddfd64a90b9c4a971ba94de3d157"
+  }
+}

@@ -129,10 +129,14 @@ def _build_report(analysis: MeetingAnalysis) -> str:
             ]
         )
         if issue.cited_sources:
-            for index, source in enumerate(issue.cited_sources, start=1):
+            for source in issue.cited_sources:
+                records = (issue.validation or {}).get("requirements", [])
+                clauses = list(dict.fromkeys(r.get("clause") for r in records
+                               if r.get("source_id") == source.source_id and r.get("clause")))
                 lines.extend(
                     [
-                        f"{index}. **{source.document}**",
+                        f"**[{source.source_id}] {source.document}**",
+                        f"   - Пункт: {', '.join(clauses) if clauses else 'не установлен'}",
                         f"   - Обозначение: {source.designation or '—'}",
                         f"   - Страница PDF: {source.page}",
                         f"   - Идентификатор фрагмента: `{source.chunk_id}`",
@@ -146,10 +150,15 @@ def _build_report(analysis: MeetingAnalysis) -> str:
                         ),
                     ]
                 )
+                lines.extend(["", "Использованный нормативный фрагмент (полный текст chunk):", "",
+                              *["> " + line for line in source.text.splitlines()], ""])
         else:
             lines.append("Использованные нормативные источники отсутствуют.")
         if issue.error:
             lines.extend(["", f"**Ошибка:** {issue.error}"])
+        if issue.validation is None and issue.cited_sources:
+            lines.extend(["", "Примечание: сохранённый ответ не имеет данных новой проверки обоснований. "
+                          "Его статус не подтверждает соответствие проекта; исторический текст не переоценивался."])
         lines.append("")
 
     timings = stats.timings

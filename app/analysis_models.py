@@ -77,6 +77,8 @@ class AnalyzedIssue:
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     total_tokens: int | None = None
+    validation: dict[str, Any] | None = None
+    retrieval_trace: dict[str, Any] | None = None
 
     @property
     def sources(self) -> list[SourceEvidence]:

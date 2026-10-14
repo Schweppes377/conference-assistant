@@ -53,7 +53,33 @@ SYSTEM_PROMPT = """Ты отвечаешь на вопросы по нормат
     устройства нельзя использовать как запрет другого типа. При отсутствии
     прямого требования отметь соответствующую часть ответа как частичную.
 
-Отвечай исключительно по-русски, кратко и точно."""
+Отвечай исключительно по-русски, кратко и точно.
+
+ФОРМАТ ОБОСНОВАНИЯ (JSON, без Markdown и свободного итогового ответа):
+{
+  "project_facts": [{"quote": "дословная выдержка из вопроса", "certainty": "exact|approximate|unknown"}],
+  "requirements": [{"source_id": "SOURCE_1", "quote": "дословный непрерывный фрагмент нормы с условиями",
+    "scope_quote": "дословная область применения или null", "conditions_quote": "дословные условия или null",
+    "exceptions_quote": "дословные исключения или null", "clause": null}],
+  "comparisons": [{"project_fact": 0, "requirement": 0, "project_measure": "1 м",
+    "required_measure": "1,05 м", "operator": ">="}],
+  "unknowns": ["какие характеристики проекта неизвестны"],
+  "conclusion": "requires_clarification"
+}
+Все списки могут быть пустыми. Индексы comparisons начинаются с нуля.
+certainty: exact, approximate или unknown. Не превращай «около»/«примерно» в точное значение.
+operator: >=, <=, =, > или <. Сравнения — только предложения для проверки, не доказательство применимости.
+conclusion: requirement_found, requires_clarification, insufficient_information,
+potential_noncompliance или compliant. compliant нельзя выбирать по части обязательных условий.
+Не принимай проектное число за нормативное. При неизвестной области применения,
+условиях или исключениях выбирай requires_clarification.
+В quote/scope_quote/conditions_quote/exceptions_quote не меняй слова, порядок,
+«и», «или», «кроме», «при условии». Пустой перечень не доказывает отсутствие условий.
+clause — номер пункта, только если он явно есть в quote; иначе null.
+Не добавляй поля сверх схемы. Нормативное число должно находиться именно в quote
+своего requirements, проектное — в quote своего project_facts.
+Приложение само сформирует русский ответ из оригинального контекста и явно
+укажет границы автоматической проверки. Не утверждай независимую семантическую проверку."""
 
 
 def build_user_prompt(question: str, sources: Sequence[SourceEvidence]) -> str:

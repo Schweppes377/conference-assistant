@@ -1,0 +1,779 @@
+{
+  "tests": 153,
+  "passed": 153,
+  "failed": 0,
+  "skipped": 0,
+  "collection_errors": 0,
+  "success_rate": 1.0,
+  "exit_status": 0,
+  "measured_at": "2026-10-14T12:30:42.723558+00:00",
+  "definition": "passed / (passed + failed + collection_errors); excludes skipped; not SLA",
+  "network_allowed": false,
+  "cases": {
+    "evaluation/test_content_evaluation.py::test_permuted_labels_and_split_segments": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00035629999911179766
+    },
+    "evaluation/test_content_evaluation.py::test_wrong_attribution_cannot_be_repaired_by_per_turn_mapping": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0004936999976052903
+    },
+    "evaluation/test_content_evaluation.py::test_missing_text_is_unmatched_not_in_accuracy_denominator": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00025440000172238797
+    },
+    "evaluation/test_content_evaluation.py::test_unknown_speaker_is_not_mapped_to_known_role": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00021179999748710543
+    },
+    "evaluation/test_content_evaluation.py::test_tied_word_votes_are_incorrect_not_optimistically_assigned": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002167999991797842
+    },
+    "evaluation/test_content_evaluation.py::test_word_alignment_is_deterministic_and_ignores_time_values": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00024370000028284267
+    },
+    "evaluation/test_content_evaluation.py::test_content_matching_no_times_duplicate_false_positive": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006756000002496876
+    },
+    "evaluation/test_content_evaluation.py::test_concept_gate_rejects_other_evacuation_topic": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0001604999997653067
+    },
+    "evaluation/test_content_evaluation.py::test_similar_word_inflections_and_empty_strings": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019219999376218766
+    },
+    "evaluation/test_content_evaluation.py::test_content_integration_retrieval_and_export_without_der": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.004314999998314306
+    },
+    "evaluation/test_content_evaluation.py::test_pending_verification_blocks_all_quality_scores": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00023830000282032415
+    },
+    "evaluation/test_content_evaluation.py::test_verified_text_must_equal_confirmed_turns": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019550000433810055
+    },
+    "evaluation/test_content_evaluation.py::test_schema_new_and_legacy_formats": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.05146670000249287
+    },
+    "evaluation/test_content_evaluation.py::test_expected_sources_remain_frozen_in_new_dataset": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.018275399997946806
+    },
+    "evaluation/test_local_components.py::test_timestamp_merge_accumulates_overlap_and_unknown": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00026330000400776044
+    },
+    "evaluation/test_local_components.py::test_document_metadata_and_retrieval_contract": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003431000004638918
+    },
+    "evaluation/test_local_components.py::test_missing_documents_and_index_fail_before_loading_model": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00031850000232225284
+    },
+    "evaluation/test_local_components.py::test_missing_and_empty_audio_do_not_invoke_models": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006355000004987232
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[42-transcript]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008863999973982573
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload1-resume]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008868000004440546
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload2-transcript]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008081999985734001
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload3-issues]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008977999968919903
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload4-resume]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006763999990653247
+    },
+    "evaluation/test_local_components.py::test_bad_progress_and_analysis_friendly_value_error[payload5-resume]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007649000035598874
+    },
+    "evaluation/test_local_components.py::test_invalid_json_and_atomic_progress_roundtrip": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.031896899999992456
+    },
+    "evaluation/test_local_components.py::test_audio_metadata_stages_without_model_execution": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.003165800000715535
+    },
+    "evaluation/test_local_components.py::test_resume_explicit_asr_and_diarization_spies": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.32180809999408666
+    },
+    "evaluation/test_metrics.py::test_text_normalization_does_not_hide_words_or_yo": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003152999997837469
+    },
+    "evaluation/test_metrics.py::test_edit_alignment_and_wer_counts": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007322000019485131
+    },
+    "evaluation/test_metrics.py::test_missing_and_empty_reference_not_fake_zero": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00038099999801488593
+    },
+    "evaluation/test_metrics.py::test_der_permutation_is_handled_by_standard_metric": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.011844200002087746
+    },
+    "evaluation/test_metrics.py::test_der_overlap_and_uem": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0015761999966343865
+    },
+    "evaluation/test_metrics.py::test_question_matching_one_to_one_duplicate_is_fp": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00031370000215247273
+    },
+    "evaluation/test_metrics.py::test_maximum_matching_not_greedy_order": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00028440000460250303
+    },
+    "evaluation/test_metrics.py::test_threshold_and_invalid_annotations": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003161999993608333
+    },
+    "evaluation/test_metrics.py::test_rag_ranks_page_identity_and_missing_queries": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003158999970764853
+    },
+    "evaluation/test_metrics.py::test_live_rag_reuses_existing_prepare_without_llm": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007384000055026263
+    },
+    "evaluation/test_metrics.py::test_default_evaluation_skips_ground_truth_and_exports": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.03548679999948945
+    },
+    "evaluation/test_metrics.py::test_resume_latency_not_claimed_as_full_rtf": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0004572000034386292
+    },
+    "evaluation/test_metrics.py::test_unexecuted_zero_stage_times_are_unavailable": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003006000042660162
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_429_during_detection_preserves_transcript": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.09047149999969406
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_429_stops_all_calls_and_resume_reuses_work": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.46644470000319416
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_budget_blocks_request_and_resume_keeps_first_answer": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0037243000042508356
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_budget_one_prevents_corrective_call_but_can_resume_it": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0022342000011121854
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_cli_existing_issues_reanswer_skips_detection": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.11267200000293087
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_cli_transcript_then_resume_without_constructing_audio_pipeline": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.2684460999953444
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_combined_detection_errors_have_one_corrective_retry": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007102999952621758
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_completed_detection_window_not_regenerated_on_resume": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0013440000038826838
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_http_200_empty_response_tokens_are_counted": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0014897000000928529
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_import_legacy_analysis_skips_completed_answers": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.004949800000758842
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_json_then_language_error_cannot_trigger_third_call": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0005680000031134114
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_missing_normative_value_does_not_call_again": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.002051000003120862
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_network_failure_pauses_instead_of_retrying_all_issues": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0016085999959614128
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_normal_eight_issues_use_nine_calls": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.007595700000820216
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_paid_invalid_response_replayed_before_corrective_resume": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.002598899998702109
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_repeated_resume_after_terminal_validation_does_not_generate": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0010421999977552332
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_short_429_also_pauses_without_generation_retry": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0014358000044012442
+    },
+    "app/test_api_budget.py::APIBudgetTests::test_two_invalid_answers_do_not_restart_answer_pipeline": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0014701999971293844
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_adjacent_different_objects_are_not_merged": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0013035999945714138
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_adjacent_parts_of_one_engineering_topic_are_merged": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008919000028981827
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_english_question_is_retried_once_in_russian": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008777999973972328
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_invalid_json_is_retried_once": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003795000011450611
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_late_recap_of_multiple_topics_is_not_a_new_issue": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007721000001765788
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_measurement_omitted_by_llm_is_restored_from_transcript": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006102000043028966
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_neighbor_context_is_traced_to_real_segments": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0005222000036155805
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_numeric_question_with_wrong_segment_ids_is_retried_once": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0004459000047063455
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_overlapping_window_duplicates_are_merged": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00102599999809172
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_search_terms_are_preserved_for_query_expansion": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007171999968704768
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_second_english_response_is_rejected_without_more_retries": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006003999951644801
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_specific_transcript_phrase_is_preserved_without_domain_mapping": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00038440000207629055
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_unknown_segment_id_is_rejected": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00033119999716291204
+    },
+    "app/test_issue_detection.py::NormativeIssueDetectorTests::test_unknown_segment_id_is_removed_when_real_trace_remains": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00041629999759607017
+    },
+    "app/test_meeting_analysis.py::MeetingAnalysisPipelineTests::test_explicit_noncompliance_wording_is_marked_potential": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00016009999671950936
+    },
+    "app/test_meeting_analysis.py::MeetingAnalysisPipelineTests::test_missing_requested_limits_are_marked_insufficient": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00014409999857889488
+    },
+    "app/test_meeting_analysis.py::MeetingAnalysisPipelineTests::test_partial_context_has_distinct_status": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00014899999951012433
+    },
+    "app/test_meeting_analysis.py::MeetingAnalysisPipelineTests::test_partial_normative_answer_is_marked_insufficient": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00015049999637994915
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_empty_response_retains_usage": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0004099000070709735
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_env_only_and_no_sdk_retries": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.002708100000745617
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_foreign_and_legacy_checkpoint_rejected_without_mutation": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00034410000080242753
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_foreign_successful_detection_cache_rejected": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00016150000010384247
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_http_mapping_redaction_and_no_retry": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0012443999949027784
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_missing_usage_marked_incomplete": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00036639999598264694
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_network_exception_does_not_expose_secrets": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002887999944505282
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_official_sdk_wire_v1_schema_and_no_429_retry": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.003228999994462356
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_roles_model_and_usage": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003356000015628524
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_same_identity_resumes_and_empty_checkpoint_adopts": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019189999875379726
+    },
+    "llm/test_gigachat_client.py::GigaChatClientTests::test_structured_detection_both_attempts": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0004793999978573993
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_01_question_80_centimeters": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00023160000273492187
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_02_question_520_square_meters": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00018370000179857016
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_03_cited_decimal_comma": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00018009999621426687
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_04_cited_centimeters": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00027240000054007396
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_05_cited_millimeters": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019220000103814527
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_06_invented_value": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002590000003692694
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_07_uncited_value": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00030470000638160855
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_08_cited_area": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0001799000019673258
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_09_length_not_area": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002336999968974851
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_10_question_length_not_area": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00022259999968810007
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_11_question_decimal_comma": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00018900000577559695
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_12_question_area_abbreviation": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00020679999579442665
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_all_russian_units": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00030440000409726053
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_debug_contains_matched_original_text": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00025549999554641545
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_evidence_not_joined_across_chunks": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003895999980159104
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_exact_decimal_conversion_not_approximate": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002832000027410686
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_other_dimensions_preserved": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019600000086938962
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_source_ids_not_list_position": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00027639999461825937
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_table_requires_dimension_and_structure": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008433000039076433
+    },
+    "llm/test_numeric_validation.py::NumericValidationTests::test_width_slope_table_shared_unit": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003467999995336868
+    },
+    "llm/test_p0_evidence.py::test_a_exact_width_cannot_confirm_compliance": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0004938999991281889
+    },
+    "llm/test_p0_evidence.py::test_b_approximate_fact_never_becomes_exact[\\u0428\\u0438\\u0440\\u0438\\u043d\\u0430 \\u043e\\u043a\\u043e\\u043b\\u043e \\u043c\\u0435\\u0442\\u0440\\u0430.]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000505900003190618
+    },
+    "llm/test_p0_evidence.py::test_b_approximate_fact_never_becomes_exact[\\u0428\\u0438\\u0440\\u0438\\u043d\\u0430 \\u043f\\u0440\\u0438\\u043c\\u0435\\u0440\\u043d\\u043e 1 \\u043c.]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003208999987691641
+    },
+    "llm/test_p0_evidence.py::test_b_approximate_fact_never_becomes_exact[\\u0428\\u0438\\u0440\\u0438\\u043d\\u0430 \\u043e\\u043a\\u043e\\u043b\\u043e 105 \\u0441\\u043c.]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00031070000113686547
+    },
+    "llm/test_p0_evidence.py::test_b_cannot_omit_approximation_word_from_project_quote": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003212000010535121
+    },
+    "llm/test_p0_evidence.py::test_c_unknown_mandatory_measures_prevent_permission": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003252000024076551
+    },
+    "llm/test_p0_evidence.py::test_d_unknown_grouped_and_single_ids_rejected[\\u041e\\u0442\\u0432\\u0435\\u0442 [SOURCE_1, SOURCE_999].]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00016730000061215833
+    },
+    "llm/test_p0_evidence.py::test_d_unknown_grouped_and_single_ids_rejected[\\u041e\\u0442\\u0432\\u0435\\u0442 [SOURCE_999].]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00016209999739658087
+    },
+    "llm/test_p0_evidence.py::test_d_unknown_grouped_and_single_ids_rejected[\\u041e\\u0442\\u0432\\u0435\\u0442 [SOURCE_1; SOURCE_999].]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00014899999951012433
+    },
+    "llm/test_p0_evidence.py::test_d_group_order_and_duplicates": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00014899999951012433
+    },
+    "llm/test_p0_evidence.py::test_e_number_must_belong_to_its_claim_sources": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0003310999964014627
+    },
+    "llm/test_p0_evidence.py::test_e_question_value_is_not_a_normative_minimum": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00028420000307960436
+    },
+    "llm/test_p0_evidence.py::test_e_structured_number_cannot_borrow_from_other_requirement": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00025319999986095354
+    },
+    "llm/test_p0_evidence.py::test_f_and_cannot_be_rewritten_as_or": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000189200000022538
+    },
+    "llm/test_p0_evidence.py::test_f_short_quote_cannot_hide_remaining_conditions_in_output": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00030399999377550557
+    },
+    "llm/test_p0_evidence.py::test_g_lighting_positive_information_survives": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007080000068526715
+    },
+    "llm/test_p0_evidence.py::test_decimal_measurement_is_not_a_clause_number": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006942999971215613
+    },
+    "llm/test_p0_evidence.py::test_clause_must_be_an_actual_heading_or_explicit_reference[4.3.12]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0005445999995572492
+    },
+    "llm/test_p0_evidence.py::test_clause_must_be_an_actual_heading_or_explicit_reference[4.3.120]": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006863000016892329
+    },
+    "llm/test_p0_evidence.py::test_legacy_false_permission_not_published_as_final_claim": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0002786999975796789
+    },
+    "llm/test_p0_evidence.py::test_search_terms_not_used_as_project_facts": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00026899999647866935
+    },
+    "llm/test_p0_evidence.py::test_arbitrary_prose_citation_does_not_establish_full_support": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00020529999892460182
+    },
+    "llm/test_p0_evidence.py::test_model_cannot_certify_its_own_applicability": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00019009999959962443
+    },
+    "llm/test_p0_evidence.py::test_malformed_json_uses_one_corrective_generation_and_accounts_tokens": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00030639999749837443
+    },
+    "llm/test_p0_evidence.py::test_two_invalid_json_responses_do_not_trigger_third_call": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00021320000087143853
+    },
+    "llm/test_p0_evidence.py::test_units_and_dimensions_in_structured_comparison": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0005376999979489483
+    },
+    "llm/test_p0_evidence.py::test_report_and_resume_keep_ids_text_and_validation": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.4640525999930105
+    },
+    "llm/test_p0_evidence.py::test_old_analysis_without_validation_loads_without_reprocessing": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.003736799997568596
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_ambiguous_retrieval_maps_only_cited_source": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.001014299996313639
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_citation_with_internal_spaces_is_resolved": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007142000031308271
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_corrupted_metadata_is_rejected": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0005185999980312772
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_day_and_night_question_without_two_limits_is_partial": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008162999947671779
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_equivalent_length_units_pass_numeric_validation": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0006642000007559545
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_grounded_answer_uses_real_metadata": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.000486999997519888
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_invented_source_id_is_rejected": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0005794000026071444
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_irrelevant_results_return_insufficient_without_llm": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00035629999911179766
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_measured_value_absent_from_cited_chunk_is_rejected": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00048180000158026814
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_missing_numeric_subpart_is_classified_as_partial": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00048409999726573005
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_partial_answer_is_exposed_separately": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0004334999975981191
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_query_expansion_and_reranking_prioritize_specific_object": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0008794000023044646
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_retry_can_correct_citation_to_chunk_containing_number": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0007719999994151294
+    },
+    "llm/test_service.py::QuestionAnsweringServiceTests::test_value_absent_from_all_context_does_not_retry": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.0009393000000272878
+    },
+    "rag/test_chunking.py::ChunkingTests::test_chunks_respect_limit_and_word_boundaries": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00030249999690568075
+    },
+    "rag/test_chunking.py::ChunkingTests::test_invalid_overlap_is_rejected": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 0.00023350000265054405
+    },
+    "rag/test_corpus.py::CorpusTests::test_catalog_matches_readable_pdf_files": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 4.480783300001349
+    },
+    "rag/test_store.py::VectorStoreTests::test_reindexing_replaces_document_without_duplicates": {
+      "outcome": "passed",
+      "phase": "call",
+      "seconds": 1.1310534000003827
+    }
+  }
+}

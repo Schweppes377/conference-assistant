@@ -21,6 +21,26 @@ class ContextValidationError(CitationValidationError):
 
 
 @dataclass(frozen=True, slots=True)
+class EvidenceAssessment:
+    """Auditable provenance, not a certificate of semantic/legal correctness."""
+
+    version: int
+    mode: str
+    conclusion: str
+    project_facts: list[dict[str, Any]]
+    requirements: list[dict[str, Any]]
+    comparisons: list[dict[str, Any]]
+    unknowns: list[str]
+    limitations: list[str]
+    compliance_confirmed: bool = False
+    semantic_validation: str = "not_performed"
+    proposed_conclusion: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True, slots=True)
 class SourceEvidence:
     """A retrieved chunk tied to trustworthy ChromaDB metadata."""
 
@@ -34,6 +54,8 @@ class SourceEvidence:
     distance: float
     rerank_score: float | None = None
     matched_terms: list[str] | None = None
+    provenance: list[dict[str, Any]] | None = None
+    related_to: str | None = None
 
     @classmethod
     def from_search_result(
@@ -80,6 +102,8 @@ class SourceEvidence:
             distance=result.distance,
             rerank_score=rerank_score,
             matched_terms=matched_terms or [],
+            provenance=metadata.get('_provenance'),
+            related_to=metadata.get('_related_to'),
         )
 
 
@@ -101,6 +125,7 @@ class PreparedQuestion:
     retrieved_candidates: list[SourceEvidence]
     context_sources: list[SourceEvidence]
     retrieval_seconds: float
+    retrieval_trace: dict[str, Any] | None = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "PreparedQuestion":
@@ -119,6 +144,7 @@ class PreparedQuestion:
             retrieved_candidates=[SourceEvidence(**s) for s in data["retrieved_candidates"]],
             context_sources=[SourceEvidence(**s) for s in data["context_sources"]],
             retrieval_seconds=data["retrieval_seconds"],
+            retrieval_trace=data.get('retrieval_trace'),
         )
 
 
@@ -142,6 +168,8 @@ class QAResult:
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
     total_tokens: int | None = None
+    validation: dict[str, Any] | None = None
+    retrieval_trace: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable experiment record."""

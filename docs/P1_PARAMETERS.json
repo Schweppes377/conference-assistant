@@ -1,0 +1,19 @@
+{
+  "version": "p1-3",
+  "weights": {
+    "semantic": 0.35,
+    "object": 0.3,
+    "parameter": 0.2,
+    "normative": 0.1,
+    "scope": 0.05
+  },
+  "limitations": "functional corrections followed exploratory control; not unseen holdout; optimized token reuse leaves scoring unchanged",
+  "files": {
+    "rag/query.py": "c9c432972e2786b9ca787d93a2c89d4f1547f3d3f5158cef92a4b59bfaadc9b5",
+    "rag/reranker.py": "63a49211bd34e6419c11aba783562b7c1f5bd0fc711084bd451d1883b430863c",
+    "rag/context.py": "6c9f75b59cc7166d3f7141da54048a21188e24452eb50c7f2ae25d02e9ed173f",
+    "rag/retriever.py": "6a9e4ac7e4afb1df86bc7241c9706760f2a1c926237e06ec25f859e0c87638bb",
+    "rag/store.py": "047be9de85acdedc9d8b5214db686ca8fe1d62c9ec1920a167a91aef8824dc58",
+    "llm/service.py": "d8b02aa1b038529ec646bdb9f86d453e49c06b1e682168f12ed5dd21697bc3f7"
+  }
+}

@@ -173,11 +173,14 @@ class MeetingAnalysisPipeline:
                         status=_answer_status(
                             insufficient=qa.insufficient_context, partial=qa.partial_context,
                             answer=qa.answer, has_sources=bool(qa.cited_sources),
+                            validation=qa.validation,
                         ), cited_sources=qa.cited_sources, retrieved_candidates=qa.retrieved_candidates,
                         retrieval_seconds=qa.timings.retrieval_seconds,
                         llm_seconds=qa.timings.llm_seconds, total_seconds=qa.timings.total_seconds,
                         prompt_tokens=qa.prompt_tokens, completion_tokens=qa.completion_tokens,
                         total_tokens=qa.total_tokens,
+                        validation=qa.validation,
+                        retrieval_trace=qa.retrieval_trace,
                     )
                 except LLMError:
                     # API failures/budget exhaustion pause ALL further LLM
@@ -267,7 +270,15 @@ class MeetingAnalysisPipeline:
         )
 
 
-def _answer_status(*, insufficient: bool, partial: bool, answer: str, has_sources: bool) -> str:
+def _answer_status(*, insufficient: bool, partial: bool, answer: str, has_sources: bool,
+                   validation: dict[str, Any] | None = None) -> str:
+    if validation is not None:
+        # Never infer project compliance from words inside quoted regulations.
+        if insufficient or not has_sources:
+            return STATUS_INSUFFICIENT_INFORMATION
+        if partial or validation.get("conclusion") != "requirement_found":
+            return STATUS_PARTIAL_INFORMATION
+        return STATUS_REQUIREMENT_FOUND
     folded = answer.casefold()
     if insufficient or not has_sources:
         return STATUS_INSUFFICIENT_INFORMATION
